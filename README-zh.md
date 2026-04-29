@@ -1,6 +1,8 @@
 # S3 Image Port
 
-[English](README.md) · [简体中文](/README-zh.md)
+> **个人 Fork** · 已同步上游至 **v1.8.5**（2026-04-30）
+
+[English](README.md) · [简体中文](README-zh.md)
 
 S3 Image Port 是一个控制面板，用于管理 AWS S3 存储桶或 S3 兼容服务
 （如 Cloudflare R2、DigitalOcean Spaces、腾讯 COS、阿里云 OSS 等）中的图片。
