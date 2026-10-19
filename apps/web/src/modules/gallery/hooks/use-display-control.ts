@@ -7,6 +7,17 @@ import {
   galleryFilterDefault,
   timeRangesGetter,
 } from "@/stores/schemas/gallery/filter";
+import {
+  galleryPageSizeDefault,
+  galleryPageSizeSchema,
+  type GalleryPageSize,
+} from "@/stores/schemas/gallery/filter";
+
+const pageSizeSchema = z.coerce
+  .number()
+  .pipe(galleryPageSizeSchema)
+  .optional()
+  .catch(undefined);
 
 export const galleryFilterSearchParamsSchema = z.object({
   searchTerm: z.string().optional().catch(undefined),
@@ -14,10 +25,12 @@ export const galleryFilterSearchParamsSchema = z.object({
   dateRangeType: z.string().optional().catch(undefined),
   sortBy: z.string().optional().catch(undefined),
   sortOrder: z.string().optional().catch(undefined),
+  pageSize: pageSizeSchema,
 });
 
 export function galleryFilterOptionsToSearchParams(
   options: GalleryFilterOptions,
+  pageSize: GalleryPageSize = galleryPageSizeDefault,
 ): z.infer<typeof galleryFilterSearchParamsSchema> {
   const params: z.infer<typeof galleryFilterSearchParamsSchema> = {};
   const { searchTerm, prefix, dateRangeType, sortBy, sortOrder } = options;
@@ -42,6 +55,9 @@ export function galleryFilterOptionsToSearchParams(
   }
   if (sortOrder !== galleryFilterDefault.sortOrder) {
     params.sortOrder = sortOrder;
+  }
+  if (pageSize !== galleryPageSizeDefault) {
+    params.pageSize = pageSize;
   }
   return params;
 }
