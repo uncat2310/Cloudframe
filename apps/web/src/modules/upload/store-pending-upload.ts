@@ -1,9 +1,7 @@
 import type { createStore } from "jotai";
 
-import {
-  createS3ImageStorage,
-  type CreateImageStorageFromSettings,
-} from "@/modules/image-storage";
+import { type CreateImageStorageFromSettings } from "@/modules/image-storage";
+import { createImageStorage } from "@/modules/self-host/create-image-storage";
 import { imageCatalog } from "@/modules/image-catalog";
 import { profileGenerationAtom } from "@/modules/settings/profile-generation";
 import { settings } from "@/stores/atoms/settings";
@@ -11,7 +9,7 @@ import { settings } from "@/stores/atoms/settings";
 export function createStorePendingUpload({
   store,
   catalog = imageCatalog,
-  createStorage = createS3ImageStorage,
+  createStorage = createImageStorage,
   onUploadFailed,
 }: {
   store: ReturnType<typeof createStore>;

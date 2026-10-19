@@ -127,16 +127,6 @@
       "s3ConfigDesc": "S3 settings are not valid or not configured, please check in the settings page.",
       "editLink": "Edit Settings"
     },
-    "preset": {
-      "title": "Load preset settings",
-      "description": "This deployment has preset S3 settings. Enter the access password to load them into this browser.",
-      "passwordPlaceholder": "Access password",
-      "load": "Load",
-      "loaded": "Loaded preset profile \"{name}\"",
-      "wrongPassword": "Wrong access password",
-      "tooManyRequests": "Too many attempts, please try again later",
-      "failed": "Failed to load preset settings"
-    },
     "gallery": {
       "title": "Gallery",
       "autoRefresh": "Auto Refresh",
@@ -410,5 +400,30 @@
       "copiedNoDesc": "Copied to clipboard",
       "copyFailedNoDesc": "Failed to copy"
     }
+  },
+  "selfHost": {
+    "loading": "Connecting to the server…",
+    "unreachable": "Cannot reach the server",
+    "retry": "Retry",
+    "notConfiguredTitle": "Server is not configured",
+    "notConfiguredDesc": "Set the following environment variables on the server and restart it:",
+    "loginTitle": "Sign in",
+    "loginDesc": "Enter the access password set in S3IP_PASSWORD.",
+    "password": "Password",
+    "login": "Sign in",
+    "wrongPassword": "Wrong password",
+    "tooManyRequests": "Too many attempts, please try again later",
+    "loginFailed": "Sign-in failed",
+    "storageTitle": "Cloudflare R2 (managed by server)",
+    "storageDesc": "The credentials are kept on the server and never sent to the browser. To change these settings, edit the server's environment variables and restart it.",
+    "endpoint": "Endpoint",
+    "bucket": "Bucket",
+    "publicUrl": "Public URL",
+    "includePath": "Path prefix",
+    "none": "(none)",
+    "testAccess": "Test connection",
+    "accessOk": "Connected to the bucket",
+    "accessFailed": "Cannot access the bucket: {message}",
+    "logout": "Sign out"
   }
 }

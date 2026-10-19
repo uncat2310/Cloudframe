@@ -42,7 +42,12 @@ class ImageS3Client {
       new PutObjectCommand({
         Bucket: this.bucket,
         Key: key,
-        Body: file,
+        // The Node.js SDK can't send a Blob body (self-hosted mode uploads
+        // from the server), so hand it the bytes there.
+        Body:
+          typeof window === "undefined" && typeof file !== "string"
+            ? new Uint8Array(await file.arrayBuffer())
+            : file,
         ContentType: contentTypeForBody(file, key),
       }),
     );
@@ -131,6 +136,19 @@ class ImageS3Client {
     }
 
     return copyResponse;
+  }
+
+  /** Cheapest request that proves the credentials can list the bucket. */
+  async checkList() {
+    const response = await this.client.send(
+      new ListObjectsV2Command({
+        Bucket: this.bucket,
+        MaxKeys: 1,
+        ...(this.settings.includePath && { Prefix: this.settings.includePath }),
+      }),
+    );
+    assertSuccessfulResponse("List", response.$metadata.httpStatusCode);
+    return response;
   }
 
   async getCors() {

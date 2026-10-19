@@ -206,7 +206,10 @@ function toStoredImage(image: ListedS3ImageObject): StoredImage {
   };
 }
 
-function toStorageFailure(error: unknown, key?: string): ImageStorageFailure {
+export function toStorageFailure(
+  error: unknown,
+  key?: string,
+): ImageStorageFailure {
   if (isNotFoundError(error) && key) {
     return { reason: "not-found", key };
   }

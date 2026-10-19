@@ -3,7 +3,8 @@ import { GitHubStarsButton } from "@/components/animate-ui/buttons/github-stars"
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocale, useTranslations } from "use-intl";
-import { Link } from "@tanstack/react-router";
+import { Link, Navigate } from "@tanstack/react-router";
+import { selfHostMode } from "@/lib/self-host/flag";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { createHeadTags } from "../../../lib/seo";
 
@@ -19,6 +20,9 @@ export const Route = createFileRoute("/$locale/_root-layout/")({
 function RouteComponent() {
   const t = useTranslations("index");
   const locale = useLocale();
+  if (selfHostMode) {
+    return <Navigate to="/$locale/gallery" params={{ locale }} replace />;
+  }
   return (
     <div className="p-2 flex items-center justify-center flex-1">
       <div className="max-w-4xl lg:max-w-[60rem] w-full flex flex-grow flex-col justify-center mx-auto h-full">

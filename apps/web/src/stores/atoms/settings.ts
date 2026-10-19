@@ -7,11 +7,11 @@ import { createJSONStorage, selectAtom } from "jotai/utils";
 import { z } from "zod";
 
 import {
-  createS3ImageStorage,
   type CreateImageStorageFromSettings,
   type ImageStorageFailure,
   type StorageAccessMethod,
 } from "@/modules/image-storage";
+import { createImageStorage } from "@/modules/self-host/create-image-storage";
 import {
   migrateV2ToV3,
   migrateV2ToV3OnUnmount,
@@ -196,7 +196,7 @@ function projectStorage(
 
 export function createSettings({
   storage,
-  createStorage = createS3ImageStorage,
+  createStorage = createImageStorage,
   getOrigin = () =>
     typeof window === "undefined" ? "" : window.location.origin,
 }: {

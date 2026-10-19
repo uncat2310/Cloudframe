@@ -6,6 +6,7 @@ import {
   loadLivePhotosKit,
   type LivePhotosKitPlayer,
 } from "@/lib/live-photo/livephotoskit-loader";
+import { toFetchableUrl } from "@/lib/self-host/fetchable-url";
 
 /**
  * Renders an Apple Live Photo using Apple's LivePhotosKit JS player: the still
@@ -47,9 +48,11 @@ export function LivePhotoPlayer({
         playerRef.current = LivePhotosKit.augmentElementAsPlayer(
           containerRef.current,
           {
-            photoSrc,
-            videoSrc,
-            metadataVideoSrc: videoSrc,
+            // LivePhotosKit loads both files with XHR, which needs CORS unless
+            // self-hosted mode routes them through the same-origin proxy.
+            photoSrc: toFetchableUrl(photoSrc),
+            videoSrc: toFetchableUrl(videoSrc),
+            metadataVideoSrc: toFetchableUrl(videoSrc),
             playbackStyle: LivePhotosKit.PlaybackStyle.FULL,
             proactivelyLoadsVideo: true,
             showsNativeControls: true,

@@ -1,4 +1,5 @@
 import { LRUCache } from "lru-cache";
+import { toFetchableUrl } from "@/lib/self-host/fetchable-url";
 
 /**
  * Browser-side HEIC/HEIF rendering support.
@@ -90,7 +91,8 @@ function releaseSlot(): void {
  * one exists. Concurrent calls for the same `src` share a single conversion.
  *
  * `src` is fetched with `fetch`, so the bucket/CDN must allow cross-origin GETs
- * (the same CORS the S3 client already needs).
+ * (the same CORS the S3 client already needs), except in self-hosted mode
+ * where it goes through the same-origin object proxy.
  */
 export function getDisplayableHeicUrl(src: string): Promise<string> {
   const cached = cache.get(src);
@@ -102,7 +104,7 @@ export function getDisplayableHeicUrl(src: string): Promise<string> {
   const task = (async () => {
     await acquireSlot();
     try {
-      const response = await fetch(src);
+      const response = await fetch(toFetchableUrl(src));
       if (!response.ok) {
         throw new Error(`Failed to fetch HEIC (${response.status})`);
       }

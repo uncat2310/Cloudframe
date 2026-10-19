@@ -1,0 +1,16 @@
+# Self-hosted Cloudflare R2 mode. Usage (from this directory):
+#   cp .env.example .env   # then fill it in
+#   docker compose up -d --build
+services:
+  s3-image-port:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: s3-image-port-selfhost
+    container_name: s3-image-port
+    env_file: .env
+    ports:
+      # Behind a reverse proxy on the same host, use "127.0.0.1:3000:3000"
+      # so the panel is only reachable through it.
+      - "3000:3000"
+    restart: unless-stopped

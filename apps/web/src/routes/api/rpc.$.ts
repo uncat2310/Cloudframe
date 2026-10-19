@@ -3,7 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { router } from "@/lib/orpc/router";
 import { onError, ORPCError, ValidationError } from "@orpc/server";
 import { z } from "zod";
-import { RequestHeadersPlugin } from "@orpc/server/plugins";
+import {
+  RequestHeadersPlugin,
+  ResponseHeadersPlugin,
+} from "@orpc/server/plugins";
 import { RatelimitHandlerPlugin } from "@orpc/experimental-ratelimit";
 
 const handler = new RPCHandler(router, {
@@ -41,7 +44,11 @@ const handler = new RPCHandler(router, {
       }
     }),
   ],
-  plugins: [new RequestHeadersPlugin(), new RatelimitHandlerPlugin()],
+  plugins: [
+    new RequestHeadersPlugin(),
+    new ResponseHeadersPlugin(),
+    new RatelimitHandlerPlugin(),
+  ],
 });
 
 export const Route = createFileRoute("/api/rpc/$")({
