@@ -9,6 +9,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { useTranslations, useLocale } from "use-intl";
+import { PresetLoader } from "./preset/preset-loader";
 
 export function InvalidS3Dialog() {
   const t = useTranslations("settings.s3Invalid");
@@ -19,8 +20,9 @@ export function InvalidS3Dialog() {
         <DialogHeader>
           <DialogTitle>{t("s3ConfigTitle")}</DialogTitle>
         </DialogHeader>
-        <div>
+        <div className="flex flex-col gap-4">
           <p>{t("s3ConfigDesc")}</p>
+          <PresetLoader />
         </div>
         <DialogFooter>
           <Link

@@ -127,6 +127,16 @@
       "s3ConfigDesc": "S3 配置不正确或未配置，请在设置页面中检查。",
       "editLink": "编辑设置"
     },
+    "preset": {
+      "title": "加载预设配置",
+      "description": "此部署已在服务器上预设了 S3 配置，输入访问密码即可加载到当前浏览器。",
+      "passwordPlaceholder": "访问密码",
+      "load": "加载",
+      "loaded": "已加载预设配置「{name}」",
+      "wrongPassword": "访问密码错误",
+      "tooManyRequests": "尝试次数过多，请稍后再试",
+      "failed": "加载预设配置失败"
+    },
     "gallery": {
       "title": "画廊",
       "autoRefresh": "自动刷新",
