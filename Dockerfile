@@ -6,7 +6,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
 RUN HUSKY=0 pnpm install --frozen-lockfile
 COPY . .
-RUN VITE_S3IP_SELF_HOST=true pnpm --filter s3-image-port-web build
+RUN pnpm --filter s3-image-port-web build:selfhost
 
 FROM node:22-alpine
 WORKDIR /app

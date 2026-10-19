@@ -97,9 +97,13 @@ export async function hasValidSession(
   return equalBytes(encoder.encode(expected), encoder.encode(signature));
 }
 
-/** Only mark the cookie Secure behind HTTPS, so plain-HTTP LAN use still works. */
-export function isSecureRequest(headers: Headers | undefined) {
+/** Only mark the cookie Secure over HTTPS, so plain-HTTP LAN use still works. */
+export function isSecureRequest(
+  headers: Headers | undefined,
+  requestUrl?: string,
+) {
   return (
+    requestUrl?.startsWith("https:") === true ||
     headers?.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https" ||
     headers?.get("cf-visitor")?.includes('"https"') === true
   );

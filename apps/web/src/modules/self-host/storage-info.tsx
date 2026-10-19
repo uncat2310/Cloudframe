@@ -1,5 +1,5 @@
 "use client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
@@ -15,10 +15,17 @@ export function SelfHostStorageInfo() {
   const { raw } = useAtomValue(settings.storage);
   const runStorage = useSetAtom(settings.storage);
   const queryClient = useQueryClient();
+  const { data: session } = useQuery(selfHostSessionQuery);
+  const backend =
+    session?.status === "signed-in" ? session.storage.backend : undefined;
 
   const rows = [
+    [
+      t("backend"),
+      backend === "r2-binding" ? t("backendBinding") : t("backendS3"),
+    ],
     [t("bucket"), raw.bucket],
-    [t("endpoint"), raw.endpoint],
+    ...(backend === "r2-binding" ? [] : [[t("endpoint"), raw.endpoint]]),
     [t("publicUrl"), raw.pubUrl],
     [t("includePath"), raw.includePath || t("none")],
   ];

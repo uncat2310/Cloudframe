@@ -86,7 +86,7 @@ const session = selfHostOs
     }
     return {
       status: "signed-in" as const,
-      storage: toPublicStorage(result.config.s3),
+      storage: toPublicStorage(result.config),
       keyTemplate: result.config.keyTemplate ?? null,
     };
   });
@@ -118,7 +118,7 @@ const login = selfHostOs
       "Set-Cookie",
       await createSessionCookie(
         result.config,
-        isSecureRequest(context.reqHeaders),
+        isSecureRequest(context.reqHeaders, context.requestUrl),
       ),
     );
   });
@@ -126,7 +126,7 @@ const login = selfHostOs
 const logout = selfHostOs.handler(({ context }) => {
   context.resHeaders?.append(
     "Set-Cookie",
-    clearSessionCookie(isSecureRequest(context.reqHeaders)),
+    clearSessionCookie(isSecureRequest(context.reqHeaders, context.requestUrl)),
   );
 });
 

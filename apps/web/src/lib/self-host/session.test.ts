@@ -9,6 +9,7 @@ import {
 } from "./session";
 
 const config: SelfHostConfig = {
+  backend: { type: "s3" },
   s3: {
     endpoint: "https://account.r2.cloudflarestorage.com",
     bucket: "images",
@@ -91,5 +92,11 @@ describe("self-host session", () => {
       false,
     );
     expect(isSecureRequest(undefined)).toBe(false);
+    expect(isSecureRequest(new Headers(), "https://panel.example.com/")).toBe(
+      true,
+    );
+    expect(isSecureRequest(new Headers(), "http://localhost:3000/")).toBe(
+      false,
+    );
   });
 });

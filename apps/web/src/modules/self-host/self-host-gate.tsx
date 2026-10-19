@@ -41,9 +41,17 @@ export const SELF_HOST_PROFILE_NAME = "Cloudflare R2";
 /** Placeholder credentials: the real ones never leave the server. */
 const SERVER_MANAGED = "server-managed";
 
-function toProfileStorage(storage: SignedInSession["storage"]): S3Options {
+function toProfileStorage({
+  endpoint,
+  bucket,
+  pubUrl,
+  includePath,
+}: SignedInSession["storage"]): S3Options {
   return {
-    ...storage,
+    endpoint,
+    bucket,
+    pubUrl,
+    includePath,
     region: "auto",
     accKeyId: SERVER_MANAGED,
     secretAccKey: SERVER_MANAGED,
