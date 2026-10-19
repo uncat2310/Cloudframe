@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/field";
 import { Switch } from "@/components/animate-ui/components/base/switch";
 import { useAtom } from "jotai";
-import { Link } from "@tanstack/react-router";
+import { upstreamDocsUrl } from "@/lib/docs-url";
 
 const autoRefreshAtom = focusAtom(settings.gallery, (optic) =>
   optic.prop("autoRefresh"),
@@ -26,18 +26,20 @@ export function GallerySettings() {
       <div className="grid gap-6">
         <div className="flex items-center gap-2 justify-between">
           <h2 className="text-2xl font-bold">{t("title")}</h2>
-          <Link
-            from="/$locale"
-            to="/$locale/docs/$"
-            params={{ locale, _splat: "settings-reference" }}
-            hash="gallery-settings"
+          <a
+            href={upstreamDocsUrl(
+              locale,
+              "settings-reference",
+              "gallery-settings",
+            )}
             target="_blank"
+            rel="noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
             title="View documentation"
           >
             <span className="underline underline-offset-1">docs</span>
             <ExternalLink className="h-4 w-4" />
-          </Link>
+          </a>
         </div>
         {/* <FormEntrySwitchAtom
           title={t("autoRefresh")}

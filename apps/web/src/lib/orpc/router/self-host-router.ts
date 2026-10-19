@@ -23,7 +23,7 @@ import {
   passwordMatches,
 } from "@/lib/self-host/session";
 import { getSelfHostStorage } from "@/lib/self-host/storage";
-import { createHybridLimiter, getClientIp } from "../rate-limit";
+import { createMemoryLimiter, getClientIp } from "../rate-limit";
 import { baseOs } from "./base-router";
 
 const selfHostOs = baseOs.errors({
@@ -52,12 +52,11 @@ const requireSession = selfHostOs.middleware(
 const isTestEnv = process.env.NODE_ENV === "test";
 
 const loginRateLimitByIp = createRatelimitMiddleware({
-  limiter: createHybridLimiter({
-    prefix: "self-host:login:ratelimit:",
-    ...(isTestEnv
+  limiter: createMemoryLimiter(
+    isTestEnv
       ? { windowMs: 1_000, maxRequests: 10_000 }
-      : { windowMs: 60_000, maxRequests: 10 }),
-  }),
+      : { windowMs: 60_000, maxRequests: 10 },
+  ),
   key: (options) => `ip:${getClientIp(options.context)}`,
 });
 

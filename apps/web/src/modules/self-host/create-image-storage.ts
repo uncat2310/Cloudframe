@@ -1,10 +1,9 @@
-import {
-  createS3ImageStorage,
-  type CreateImageStorageFromSettings,
-} from "@/modules/image-storage";
-import { selfHostMode } from "@/lib/self-host/flag";
+import type { CreateImageStorageFromSettings } from "@/modules/image-storage";
 import { createServerImageStorage } from "./server-image-storage";
 
-/** Default storage factory: server-proxied in self-hosted mode, direct S3 otherwise. */
-export const createImageStorage: CreateImageStorageFromSettings = (settings) =>
-  selfHostMode ? createServerImageStorage() : createS3ImageStorage(settings);
+/**
+ * Default storage factory: every operation is proxied through the server,
+ * which holds the R2 access, so the browser-side settings are not needed.
+ */
+export const createImageStorage: CreateImageStorageFromSettings = () =>
+  createServerImageStorage();

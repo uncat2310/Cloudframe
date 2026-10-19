@@ -2,7 +2,6 @@ import { getLocale, LocaleNotFoundError } from "@/i18n/routing";
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 import { IntlProvider } from "use-intl";
 import { createHeadTags } from "../../lib/seo";
-import { RemoteChangeDetector } from "@/modules/settings/sync/components/global/detect-remote-change";
 
 export const Route = createFileRoute("/$locale")({
   loader: async (ctx) => {
@@ -33,7 +32,6 @@ function RouteComponent() {
       timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone}
     >
       <Outlet />
-      <RemoteChangeDetector />
     </IntlProvider>
   );
 }

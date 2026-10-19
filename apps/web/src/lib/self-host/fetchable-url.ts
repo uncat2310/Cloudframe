@@ -1,5 +1,3 @@
-import { selfHostMode } from "./flag";
-
 let publicBase: string | undefined;
 
 export function setSelfHostPublicBase(pubUrl: string) {
@@ -7,13 +5,13 @@ export function setSelfHostPublicBase(pubUrl: string) {
 }
 
 /**
- * URL to use when the browser must read an image's bytes with `fetch`/XHR.
- * In self-hosted mode, public bucket URLs are routed through the same-origin
- * object proxy so the bucket needs no CORS rules; anything else (including
- * `blob:` URLs) is returned unchanged.
+ * URL to use when the browser must read an image's bytes with `fetch`/XHR:
+ * public bucket URLs are routed through the same-origin object proxy so the
+ * bucket needs no CORS rules; anything else (including `blob:` URLs) is
+ * returned unchanged.
  */
 export function toFetchableUrl(url: string) {
-  if (!selfHostMode || !publicBase || !url.startsWith(publicBase)) return url;
+  if (!publicBase || !url.startsWith(publicBase)) return url;
   const key = url.slice(publicBase.length);
   return `/api/self-host/object?key=${encodeURIComponent(key)}`;
 }

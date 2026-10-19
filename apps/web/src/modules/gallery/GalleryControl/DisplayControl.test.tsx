@@ -105,16 +105,19 @@ vi.mock("@tanstack/react-router", () => ({
     ),
 }));
 
-vi.mock(import("@/modules/image-storage"), async (importOriginal) => {
-  const original = await importOriginal();
-  return {
-    ...original,
-    createS3ImageStorage(settings: unknown) {
-      storage.create(settings);
-      throw new Error("URL synchronization must not construct storage");
-    },
-  };
-});
+vi.mock(
+  import("@/modules/self-host/create-image-storage"),
+  async (importOriginal) => {
+    const original = await importOriginal();
+    return {
+      ...original,
+      createImageStorage(settings: unknown) {
+        storage.create(settings);
+        throw new Error("URL synchronization must not construct storage");
+      },
+    };
+  },
+);
 
 beforeEach(() => {
   route.reset({});

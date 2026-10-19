@@ -14,8 +14,7 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@/.source": ["./.source"]
+      "@/*": ["./src/*"]
     },
     "types": ["unplugin-icons/types/react", "vite/client"]
   },
