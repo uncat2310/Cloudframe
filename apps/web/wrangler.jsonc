@@ -13,12 +13,12 @@
       // Must stay "BUCKET": the app looks the binding up by this name.
       "binding": "BUCKET",
       // TODO: your R2 bucket name
-      "bucket_name": "my-image-bucket",
+      "bucket_name": "img",
     },
   ],
   "vars": {
     // TODO: the bucket's public URL (custom domain or r2.dev address)
-    "R2_PUBLIC_URL": "https://img.example.com",
+    "R2_PUBLIC_URL": "https://i.as4837.de",
   },
   // The login password is a secret, never put it here:
   //   npx wrangler@4 secret put S3IP_PASSWORD -c .output/server/wrangler.json
