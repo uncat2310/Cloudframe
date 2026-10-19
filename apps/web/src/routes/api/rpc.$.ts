@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/rpc/$")({
       ANY: async ({ request }) => {
         const { response } = await handler.handle(request, {
           prefix: "/api/rpc",
-          context: {}, // Provide initial context if needed
+          context: { requestUrl: request.url },
         });
 
         return response ?? new Response("Not Found", { status: 404 });

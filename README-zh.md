@@ -44,7 +44,7 @@ S3 Image Port 是一个控制面板，用于管理 AWS S3 存储桶或 S3 兼容
 
 ### 自部署（Cloudflare R2，开箱即用）
 
-想在自己的 VPS 或电脑上用？自部署模式把 R2 密钥放在服务器上，浏览器只需输入登录密码，也不需要配置 CORS。用 Docker 一条命令即可启动，详见 [selfhost/README.md](selfhost/README.md)。
+想自己部署？自部署模式把 R2 的访问权限放在服务器端，浏览器只需输入登录密码，也不需要配置 CORS。可以免费部署到 Cloudflare Workers，也可以用 Docker 部署在 VPS 或电脑上，详见 [selfhost/README.md](selfhost/README.md)。
 
 ## 反馈和贡献
 

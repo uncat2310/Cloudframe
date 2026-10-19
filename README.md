@@ -37,7 +37,7 @@ You can also customize this application to a certain extent. Go to the `Settings
 
 ### Self-hosting with Cloudflare R2
 
-Self-hosted mode keeps the R2 credentials on your server: the browser only needs a login password and the bucket needs no CORS rules. It runs with a single `docker compose` command; see [selfhost/README.md](selfhost/README.md) (in Chinese).
+Self-hosted mode keeps R2 access on the server side: the browser only needs a login password and the bucket needs no CORS rules. Deploy it for free to Cloudflare Workers (using an R2 binding) or with Docker on a VPS or your own machine; see [selfhost/README.md](selfhost/README.md) (in Chinese).
 
 ## Feedback and Contributions
 

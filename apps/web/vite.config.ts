@@ -1,5 +1,6 @@
 // vite.config.ts
-import { defineConfig } from "vite";
+import { fileURLToPath } from "node:url";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
@@ -9,9 +10,33 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import mdx from "fumadocs-mdx/vite";
 import { nitro } from "nitro/vite";
 
+/**
+ * Cloudflare Workers builds resolve the `browser` export of
+ * `fumadocs-mdx/runtime/vite`, which lacks the `sourceAsync` the docs loader
+ * calls at startup; force the server runtime for server environments.
+ */
+function fumadocsServerRuntime(): Plugin {
+  const serverRuntime = fileURLToPath(
+    import.meta.resolve("fumadocs-mdx/runtime/vite"),
+  );
+  return {
+    name: "fumadocs-mdx-server-runtime",
+    enforce: "pre",
+    resolveId(id) {
+      if (
+        id === "fumadocs-mdx/runtime/vite" &&
+        this.environment.config.consumer === "server"
+      ) {
+        return serverRuntime;
+      }
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    fumadocsServerRuntime(),
     Icons({ compiler: "jsx", jsx: "react" }),
     mdx(await import("./source.config")),
     tsconfigPaths(),

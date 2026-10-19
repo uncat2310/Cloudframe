@@ -8,7 +8,9 @@ import { RedisUnavailableError } from "@/lib/redis/errors";
 
 interface ORPCContext
   extends RequestHeadersPluginContext,
-    ResponseHeadersPluginContext {}
+    ResponseHeadersPluginContext {
+  requestUrl?: string;
+}
 
 export const baseOs = os.$context<ORPCContext>().errors({
   INPUT_VALIDATION_FAILED: {
