@@ -1,6 +1,7 @@
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { selfHostMode } from "@/lib/self-host/flag";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useTranslations } from "use-intl";
 
@@ -31,17 +32,20 @@ function SettingPageSwitcher() {
 
   return (
     <div className="flex flex-col gap-2 mb-4 md:mb-0">
-      <Link
-        from="/$locale/settings"
-        to="/$locale/settings/profile"
-        params={(prev) => ({ locale: prev.locale })}
-        className={cn(
-          buttonVariants({ variant: "ghost" }),
-          "justify-start data-[status=active]:bg-muted data-[status=active]:hover:bg-accent",
-        )}
-      >
-        {t("profilesName")}
-      </Link>
+      {/* Profiles and sync don't apply when the server manages the bucket. */}
+      {!selfHostMode && (
+        <Link
+          from="/$locale/settings"
+          to="/$locale/settings/profile"
+          params={(prev) => ({ locale: prev.locale })}
+          className={cn(
+            buttonVariants({ variant: "ghost" }),
+            "justify-start data-[status=active]:bg-muted data-[status=active]:hover:bg-accent",
+          )}
+        >
+          {t("profilesName")}
+        </Link>
+      )}
       <Link
         from="/$locale/settings"
         to="/$locale/settings/s3"

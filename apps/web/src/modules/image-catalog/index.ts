@@ -8,7 +8,6 @@ import { z } from "zod";
 import { s3Key2Url } from "@/lib/s3/s3-key";
 import { pairStoredLiveImages } from "@/lib/live-photo/live-photo";
 import {
-  createS3ImageStorage,
   storedImageDownloadSchema,
   storedImageMetadataSchema,
   storedImageSchema,
@@ -16,6 +15,7 @@ import {
   type CreateImageStorageFromSettings,
 } from "@/modules/image-storage";
 import { profileGenerationAtom } from "@/modules/settings/profile-generation";
+import { createImageStorage } from "@/modules/self-host/create-image-storage";
 import { settings } from "@/stores/atoms/settings";
 import {
   galleryFilterDefault,
@@ -95,7 +95,7 @@ function createDeferred<T>() {
 }
 
 export function createImageCatalog({
-  createStorage = createS3ImageStorage,
+  createStorage = createImageStorage,
   cacheStorage,
 }: {
   createStorage?: CreateImageStorageFromSettings;

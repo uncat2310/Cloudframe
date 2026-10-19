@@ -1,7 +1,7 @@
-import { presetRouter } from "./preset-router";
+import { selfHostRouter } from "./self-host-router";
 import { profilesRouter } from "./sync-profiles-router";
 
 export const router = {
   profiles: profilesRouter,
-  preset: presetRouter,
+  selfHost: selfHostRouter,
 };

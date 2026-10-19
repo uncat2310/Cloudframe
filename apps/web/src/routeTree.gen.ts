@@ -16,6 +16,7 @@ import { Route as LocalePhotoRouteImport } from './routes/$locale/photo'
 import { Route as LocaleRootLayoutRouteRouteImport } from './routes/$locale/_root-layout/route'
 import { Route as LocaleDocsRouteRouteImport } from './routes/$locale/_docs/route'
 import { Route as LocaleRootLayoutIndexRouteImport } from './routes/$locale/_root-layout/index'
+import { Route as ApiSelfHostObjectRouteImport } from './routes/api/self-host/object'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc.$'
 import { Route as LocaleRootLayoutUploadRouteImport } from './routes/$locale/_root-layout/upload'
 import { Route as LocaleRootLayoutGalleryRouteImport } from './routes/$locale/_root-layout/gallery'
@@ -59,6 +60,11 @@ const LocaleRootLayoutIndexRoute = LocaleRootLayoutIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LocaleRootLayoutRouteRoute,
+} as any)
+const ApiSelfHostObjectRoute = ApiSelfHostObjectRouteImport.update({
+  id: '/api/self-host/object',
+  path: '/api/self-host/object',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/$locale/gallery': typeof LocaleRootLayoutGalleryRoute
   '/$locale/upload': typeof LocaleRootLayoutUploadRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/self-host/object': typeof ApiSelfHostObjectRoute
   '/$locale/': typeof LocaleRootLayoutIndexRoute
   '/$locale/docs/$': typeof LocaleDocsDocsSplatRoute
   '/$locale/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/$locale/gallery': typeof LocaleRootLayoutGalleryRoute
   '/$locale/upload': typeof LocaleRootLayoutUploadRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/self-host/object': typeof ApiSelfHostObjectRoute
   '/$locale/docs/$': typeof LocaleDocsDocsSplatRoute
   '/$locale/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
   '/$locale/settings/profile': typeof LocaleRootLayoutSettingsProfileRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/$locale/_root-layout/gallery': typeof LocaleRootLayoutGalleryRoute
   '/$locale/_root-layout/upload': typeof LocaleRootLayoutUploadRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/self-host/object': typeof ApiSelfHostObjectRoute
   '/$locale/_root-layout/': typeof LocaleRootLayoutIndexRoute
   '/$locale/_docs/docs/$': typeof LocaleDocsDocsSplatRoute
   '/$locale/_root-layout/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/$locale/gallery'
     | '/$locale/upload'
     | '/api/rpc/$'
+    | '/api/self-host/object'
     | '/$locale/'
     | '/$locale/docs/$'
     | '/$locale/settings/gallery'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/$locale/gallery'
     | '/$locale/upload'
     | '/api/rpc/$'
+    | '/api/self-host/object'
     | '/$locale/docs/$'
     | '/$locale/settings/gallery'
     | '/$locale/settings/profile'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/$locale/_root-layout/gallery'
     | '/$locale/_root-layout/upload'
     | '/api/rpc/$'
+    | '/api/self-host/object'
     | '/$locale/_root-layout/'
     | '/$locale/_docs/docs/$'
     | '/$locale/_root-layout/settings/gallery'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   LocaleRouteRoute: typeof LocaleRouteRouteWithChildren
   ApiSearchRoute: typeof ApiSearchRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  ApiSelfHostObjectRoute: typeof ApiSelfHostObjectRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$locale/'
       preLoaderRoute: typeof LocaleRootLayoutIndexRouteImport
       parentRoute: typeof LocaleRootLayoutRouteRoute
+    }
+    '/api/self-host/object': {
+      id: '/api/self-host/object'
+      path: '/api/self-host/object'
+      fullPath: '/api/self-host/object'
+      preLoaderRoute: typeof ApiSelfHostObjectRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/rpc/$': {
       id: '/api/rpc/$'
@@ -429,6 +449,7 @@ const rootRouteChildren: RootRouteChildren = {
   LocaleRouteRoute: LocaleRouteRouteWithChildren,
   ApiSearchRoute: ApiSearchRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
+  ApiSelfHostObjectRoute: ApiSelfHostObjectRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

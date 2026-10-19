@@ -35,6 +35,10 @@ For obtaining S3 related keys, please refer to the documentation of your storage
 
 You can also customize this application to a certain extent. Go to the `Settings` page and you can configure some important options.
 
+### Self-hosting with Cloudflare R2
+
+Self-hosted mode keeps the R2 credentials on your server: the browser only needs a login password and the bucket needs no CORS rules. It runs with a single `docker compose` command; see [selfhost/README.md](selfhost/README.md) (in Chinese).
+
 ## Feedback and Contributions
 
 Feel free to raise an [Issue](https://github.com/yy4382/s3-image-port/issues/new/choose) if you encounter any problems or have suggestions.

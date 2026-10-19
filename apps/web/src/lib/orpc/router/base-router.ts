@@ -1,10 +1,14 @@
 import { os } from "@orpc/server";
 import { z } from "zod";
-import { RequestHeadersPluginContext } from "@orpc/server/plugins";
+import type {
+  RequestHeadersPluginContext,
+  ResponseHeadersPluginContext,
+} from "@orpc/server/plugins";
 import { RedisUnavailableError } from "@/lib/redis/errors";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface ORPCContext extends RequestHeadersPluginContext {}
+interface ORPCContext
+  extends RequestHeadersPluginContext,
+    ResponseHeadersPluginContext {}
 
 export const baseOs = os.$context<ORPCContext>().errors({
   INPUT_VALIDATION_FAILED: {
