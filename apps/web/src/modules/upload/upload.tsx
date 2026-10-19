@@ -2,14 +2,12 @@
 
 import { useAtomValue, useSetAtom } from "jotai";
 import { selectAtom } from "jotai/utils";
-import { ClientOnly } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { settings } from "@/stores/atoms/settings";
-import { InvalidS3Dialog } from "@/modules/settings/InvalidS3Dialog";
 
 import { uploadQueue } from "./upload-queue";
 import { useHandlePaste } from "./hooks/use-handle-paste";
@@ -46,8 +44,6 @@ export function UploadContent() {
           <DropZone />
         </CardContent>
       </Card>
-
-      <ClientOnly>{!storageConfigured && <InvalidS3Dialog />}</ClientOnly>
 
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-xl font-semibold">

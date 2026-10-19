@@ -21,7 +21,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc/client";
 import type { selfHostSessionSchema } from "@/lib/orpc/router/self-host-router";
 import { setSelfHostPublicBase } from "@/lib/self-host/fetchable-url";
-import { selfHostMode } from "@/lib/self-host/flag";
 import { replaceSettingsProfileAtom } from "@/modules/settings/replace-profile";
 import { settings } from "@/stores/atoms/settings";
 import {
@@ -60,15 +59,10 @@ function toProfileStorage({
 }
 
 /**
- * In self-hosted mode, only render the app once the browser has signed in and
- * the active profile points at the server-managed bucket.
+ * Only render the app once the browser has signed in and the active profile
+ * points at the server-managed bucket.
  */
 export function SelfHostGate({ children }: { children: ReactNode }) {
-  if (!selfHostMode) return children;
-  return <SelfHostSession>{children}</SelfHostSession>;
-}
-
-function SelfHostSession({ children }: { children: ReactNode }) {
   const t = useTranslations("selfHost");
   const queryClient = useQueryClient();
   const session = useQuery(selfHostSessionQuery);

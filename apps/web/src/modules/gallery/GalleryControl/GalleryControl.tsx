@@ -6,13 +6,11 @@ import {
 } from "@/components/ui/tooltip";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { selectAtom } from "jotai/utils";
-import { settings } from "@/stores/atoms/settings";
 import McCheckbox from "~icons/mingcute/checkbox-line.jsx";
 import McDelete from "~icons/mingcute/delete-3-line.jsx";
 import McRefresh from "~icons/mingcute/refresh-2-line.jsx";
 import { DisplayControl } from "./DisplayControl";
 import { Suspense, useEffect, useRef } from "react";
-import { InvalidS3Dialog } from "@/modules/settings/InvalidS3Dialog";
 import { DeleteSecondConfirm } from "@/components/misc/delete-second-confirm";
 import { cn } from "@/lib/utils";
 import { CopyIcon } from "lucide-react";
@@ -21,10 +19,6 @@ import { useCopy } from "@/lib/hooks/use-copy";
 import { imageCatalog } from "@/modules/image-catalog";
 import { toast } from "sonner";
 
-const storageConfiguredAtom = selectAtom(
-  settings.storage,
-  ({ validation }) => validation.status === "valid",
-);
 const galleryStateAtom = selectAtom(
   imageCatalog.state,
   ({ gallery, refresh }) => ({
@@ -41,7 +35,6 @@ const galleryStateAtom = selectAtom(
 export function GalleryControl() {
   const [selection, updateSelection] = useAtom(imageCatalog.view.selection);
   const { showing, filtered, refreshing } = useAtomValue(galleryStateAtom);
-  const storageConfigured = useAtomValue(storageConfiguredAtom);
   const runCatalog = useSetAtom(imageCatalog.run);
   const t = useTranslations("gallery.control");
   const tStore = useTranslations("gallery.store");
@@ -97,7 +90,6 @@ export function GalleryControl() {
 
   return (
     <div className="flex gap-2 justify-between">
-      {!storageConfigured && <InvalidS3Dialog />}
       <div className="flex gap-2">
         <Tooltip>
           <TooltipTrigger

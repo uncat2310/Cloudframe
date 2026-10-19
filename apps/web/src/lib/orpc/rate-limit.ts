@@ -1,101 +1,19 @@
-import { createRatelimitMiddleware } from "@orpc/experimental-ratelimit";
-import type { Ratelimiter } from "@orpc/experimental-ratelimit";
 import { MemoryRatelimiter } from "@orpc/experimental-ratelimit/memory";
-import { RedisRatelimiter } from "@orpc/experimental-ratelimit/redis";
 import type { RequestHeadersPluginContext } from "@orpc/server/plugins";
-import { getRedisClient } from "../redis/client";
-import { sha256 } from "../utils/hash";
 
-type UploadInput = {
-  token: string;
-};
-
-type UploadContext = RequestHeadersPluginContext;
-
-type HybridLimiterOptions = {
-  prefix: string;
+/**
+ * In-memory limiter. Per process on Node, per isolate on Workers: enough to
+ * slow down password guessing for a single-user panel.
+ */
+export function createMemoryLimiter(options: {
   windowMs: number;
   maxRequests: number;
-};
-
-const isTestEnv = process.env.NODE_ENV === "test";
-
-const TOKEN_RATE_LIMIT = isTestEnv
-  ? { windowMs: 1_000, maxRequests: 5_000 }
-  : { windowMs: 60_000, maxRequests: 6 };
-
-const IP_RATE_LIMIT = isTestEnv
-  ? { windowMs: 1_000, maxRequests: 10_000 }
-  : { windowMs: 60_000, maxRequests: 30 };
-
-let loggedRedisUnavailable = false;
-let loggedRedisFailure = false;
-
-function logRedisUnavailable(error: unknown) {
-  if (!loggedRedisUnavailable) {
-    console.warn(
-      "[rate-limit] Redis unavailable, falling back to in-memory limiter",
-      error,
-    );
-    loggedRedisUnavailable = true;
-  }
-}
-
-function logRedisFailure(error: unknown) {
-  if (!loggedRedisFailure) {
-    console.error("[rate-limit] Redis limiter failure", error);
-    loggedRedisFailure = true;
-  }
-}
-
-export function createHybridLimiter(
-  options: HybridLimiterOptions,
-): Ratelimiter {
-  const memoryLimiter = new MemoryRatelimiter({
+}) {
+  return new MemoryRatelimiter({
     maxRequests: options.maxRequests,
     window: options.windowMs,
   });
-
-  try {
-    const redis = getRedisClient();
-
-    if (!redis) {
-      logRedisUnavailable(new Error("Redis client not available"));
-      return memoryLimiter;
-    }
-
-    const redisLimiter = new RedisRatelimiter({
-      eval: redis.eval.bind(redis),
-      prefix: options.prefix,
-      maxRequests: options.maxRequests,
-      window: options.windowMs,
-    });
-
-    return {
-      async limit(key) {
-        try {
-          return await redisLimiter.limit(key);
-        } catch (error) {
-          logRedisFailure(error);
-          return memoryLimiter.limit(key);
-        }
-      },
-    };
-  } catch (error) {
-    logRedisUnavailable(error);
-    return memoryLimiter;
-  }
 }
-
-const uploadTokenLimiter = createHybridLimiter({
-  prefix: "profile:sync:ratelimit:",
-  ...TOKEN_RATE_LIMIT,
-});
-
-const uploadIpLimiter = createHybridLimiter({
-  prefix: "profile:sync:ratelimit:",
-  ...IP_RATE_LIMIT,
-});
 
 export function getClientIp(context: RequestHeadersPluginContext): string {
   const headers = context.reqHeaders;
@@ -118,25 +36,3 @@ export function getClientIp(context: RequestHeadersPluginContext): string {
   }
   return "unknown";
 }
-
-export const uploadRateLimitByToken = createRatelimitMiddleware<
-  UploadContext,
-  UploadInput
->({
-  limiter: uploadTokenLimiter,
-  key: async (_options, input) => {
-    const authHash = await sha256(input.token);
-    return `token:${authHash}`;
-  },
-});
-
-export const uploadRateLimitByIp = createRatelimitMiddleware<
-  UploadContext,
-  UploadInput
->({
-  limiter: uploadIpLimiter,
-  key: (options) => {
-    const ip = getClientIp(options.context);
-    return `ip:${ip}`;
-  },
-});

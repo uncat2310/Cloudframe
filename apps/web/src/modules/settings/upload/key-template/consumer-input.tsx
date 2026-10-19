@@ -14,8 +14,8 @@ import {
   FieldError,
   FieldLabel,
 } from "@/components/ui/field";
-import { useTranslations } from "use-intl";
-import { Link } from "@tanstack/react-router";
+import { useLocale, useTranslations } from "use-intl";
+import { upstreamDocsUrl } from "@/lib/docs-url";
 import { Badge } from "@/components/ui/badge";
 type KeyTemplateConsumerInputProps = KeyTemplateFieldInputProps & {
   presets: KeyTemplatePreset[];
@@ -24,6 +24,7 @@ type KeyTemplateConsumerInputProps = KeyTemplateFieldInputProps & {
 export function KeyTemplateConsumerInput(props: KeyTemplateConsumerInputProps) {
   const { value, onChange } = props;
   const t = useTranslations("settings.keyTemplate");
+  const locale = useLocale();
   const { error, warning, validate } = useKeyTemplateValidation();
   return (
     <Field data-invalid={error !== undefined} className="gap-1">
@@ -39,19 +40,18 @@ export function KeyTemplateConsumerInput(props: KeyTemplateConsumerInputProps) {
       <FieldDescription>
         {t.rich("description", {
           more: (chunks) => (
-            <Link
-              from="/$locale"
-              to="/$locale/docs/$"
-              params={({ locale }) => ({
+            <a
+              href={upstreamDocsUrl(
                 locale,
-                _splat: "settings-reference",
-              })}
-              hash="key-template"
+                "settings-reference",
+                "key-template",
+              )}
               target="_blank"
+              rel="noreferrer"
               className="underline underline-offset-1"
             >
               {chunks}
-            </Link>
+            </a>
           ),
         })}
       </FieldDescription>

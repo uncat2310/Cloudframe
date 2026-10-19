@@ -1,46 +1,16 @@
-# S3 Image Port
-
-> **个人 Fork** · 已同步上游至 **v1.8.5**（2026-04-30）
+# S3 Image Port (personal edition)
 
 [English](README.md) · [简体中文](README-zh.md)
 
-S3 Image Port is a control panel for managing images in your AWS S3 buckets or any S3-compatible service (like Cloudflare R2, DigitalOcean Spaces, etc.).
+A personal image-hosting panel for Cloudflare R2, adapted from [yy4382/s3-image-port](https://github.com/yy4382/s3-image-port):
 
-> Unlike traditional image hosting services, S3 Image Port does not store your images or handle the delivery. It only provides a management interface. We designed it to be a **no vendor lock-in** solution: your images reside in your own S3 bucket, completely independent of this project. Even if S3 Image Port were to go offline, you would not need to migrate anything.
+- **Works out of the box**: R2 access stays on the server; the browser only needs a login password, on any device.
+- **No CORS setup**: the browser only talks to the panel's own origin, which talks to R2.
+- **Free to host**: deploy to Cloudflare Workers (using an R2 binding, no API token), or with Docker on a VPS or your own machine.
+- Images live in your own R2 bucket and are served from its public URL.
 
-The panel itself is stateless and doesn't store any of your data.
+Features: upload with optional compression/format conversion and key templates; gallery with search, filters, HEIC and Live Photo support; copy URL/Markdown; rename, delete, download.
 
-Start using at <https://imageport.app>!
+Deployment: see [selfhost/README.md](selfhost/README.md) (in Chinese).
 
-## Features
-
-- :cloud: **Upload Photos**: Easily upload your images with support for automatic compression and format conversion.
-- :framed_picture: **Display Image List**: View and find all uploaded images in the gallery, support filtering options.
-- :link: **Copy Image Links**: One-click copying of links to uploaded images in raw or markdown format.
-- :wastebasket: **Delete Images**: Remove images from your bucket directly through the panel.
-
-## Not an Image Hosting Service
-
-S3 Image Port is not an image hosting service in the traditional sense. A typical image host stores and serves your images. S3 Image Port doesn't store your files or get involved in the access flow. This has several advantages:
-
-- **Your data is yours**: Your images are in your own S3 bucket. If this project disappears, your images and their access are unaffected.
-- **No extra database**: Traditional hosts often have a database for metadata. If that's lost, recovery is hard. Here, everything is just files in your bucket.
-- **Customizable access path**: Since the panel doesn't serve the images, you have full control over the image URLs.
-
-## Usage
-
-Before using the application, you need to configure your S3 settings. For a detailed guide, please refer to our [Getting Started documentation](https://docs.imageport.app/guide/getting-started).
-
-For obtaining S3 related keys, please refer to the documentation of your storage service provider. If you are using Cloudflare R2 Storage, you can check out the [Step-By-Step Guide for Cloudflare R2](https://docs.imageport.app/guide/for-cloudflare-r2).
-
-You can also customize this application to a certain extent. Go to the `Settings` page and you can configure some important options.
-
-### Self-hosting with Cloudflare R2
-
-Self-hosted mode keeps R2 access on the server side: the browser only needs a login password and the bucket needs no CORS rules. Deploy it for free to Cloudflare Workers (using an R2 binding) or with Docker on a VPS or your own machine; see [selfhost/README.md](selfhost/README.md) (in Chinese).
-
-## Feedback and Contributions
-
-Feel free to raise an [Issue](https://github.com/yy4382/s3-image-port/issues/new/choose) if you encounter any problems or have suggestions.
-
-If you have ideas for new features, don’t hesitate to create an [Issue](https://github.com/yy4382/s3-image-port/issues/new/choose)for those as well—no idea is too far-fetched!
+Compared with upstream, this fork only keeps the self-hosted mode: browser-side S3 settings, multiple profiles, profile sync and the bundled docs site are removed.

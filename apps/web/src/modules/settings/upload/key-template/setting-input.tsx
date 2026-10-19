@@ -31,8 +31,8 @@ import {
   PlusIcon,
   RefreshCcw,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
-import { useTranslations } from "use-intl";
+import { upstreamDocsUrl } from "@/lib/docs-url";
+import { useLocale, useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { v7 as uuidV7 } from "uuid";
 import {
@@ -74,25 +74,25 @@ const presetAtomsAtom = splitAtom(keyTemplatePresetsAtom, (item) => item.key);
 
 export function KeyTemplateSettingsInput() {
   const t = useTranslations("settings.keyTemplate");
+  const locale = useLocale();
   return (
     <FieldSet>
       <FieldLegend>{t("title")}</FieldLegend>
       <FieldDescription>
         {t.rich("description", {
           more: (chunks) => (
-            <Link
-              from="/$locale"
-              to="/$locale/docs/$"
-              params={({ locale }) => ({
+            <a
+              href={upstreamDocsUrl(
                 locale,
-                _splat: "settings-reference",
-              })}
-              hash="key-template"
+                "settings-reference",
+                "key-template",
+              )}
               target="_blank"
+              rel="noreferrer"
               className="underline underline-offset-1"
             >
               {chunks}
-            </Link>
+            </a>
           ),
         })}
       </FieldDescription>

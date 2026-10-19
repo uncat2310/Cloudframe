@@ -53,24 +53,27 @@ const feedback = vi.hoisted(() => ({
   warning: vi.fn(),
 }));
 
-vi.mock(import("@/modules/image-storage"), async (importOriginal) => {
-  const original = await importOriginal();
-  return {
-    ...original,
-    createS3ImageStorage(settings: unknown) {
-      storage.create(settings);
-      return {
-        listStoredImages: () => storage.list(),
-        probeStoredImage: (key: string) => storage.probe(key),
-        deleteStoredImages: (keys: string[]) => storage.delete(keys),
-        renameStoredImage: (input: unknown) => storage.rename(input),
-        downloadStoredImage: (key: string) => storage.download(key),
-        putStoredImage: (input: unknown) => storage.put(input),
-        checkAccess: (input: unknown) => storage.checkAccess(input),
-      };
-    },
-  };
-});
+vi.mock(
+  import("@/modules/self-host/create-image-storage"),
+  async (importOriginal) => {
+    const original = await importOriginal();
+    return {
+      ...original,
+      createImageStorage(settings: unknown) {
+        storage.create(settings);
+        return {
+          listStoredImages: () => storage.list(),
+          probeStoredImage: (key: string) => storage.probe(key),
+          deleteStoredImages: (keys: string[]) => storage.delete(keys),
+          renameStoredImage: (input: unknown) => storage.rename(input),
+          downloadStoredImage: (key: string) => storage.download(key),
+          putStoredImage: (input: unknown) => storage.put(input),
+          checkAccess: (input: unknown) => storage.checkAccess(input),
+        };
+      },
+    };
+  },
+);
 
 vi.mock("@tanstack/react-router", () => ({
   getRouteApi: () => ({

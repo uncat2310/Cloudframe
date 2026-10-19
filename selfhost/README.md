@@ -1,13 +1,13 @@
-# 自部署：Cloudflare R2 开箱即用
+# 部署指南：Cloudflare R2 开箱即用
 
-这是 S3 Image Port 的自部署模式，适合个人使用：
+这是 S3 Image Port 的个人自用版本：
 
 - **只需登录密码**：R2 的访问权限保存在服务器端，浏览器打开后输入密码即可使用，换设备、换浏览器都不用再填参数。
 - **不需要配置 CORS**：浏览器只访问面板自己的域名，由服务器代为访问 R2；HEIC 图片和 Live Photo 也经由服务器转发。
 - **密钥不出服务器**：浏览器拿不到任何 R2 凭据。
 - 图片展示、复制链接仍然直接使用 R2 的公开地址，不经过面板。
 
-界面和功能与公共版一致；「配置文件」和「同步」在此模式下隐藏，「上传」「画廊」设置仍保存在各自的浏览器中。
+「上传」「画廊」设置（路径模板、压缩等）保存在各自的浏览器中。
 
 有三种部署方式：
 
@@ -29,7 +29,7 @@
 
 3. **（仅 Docker / Node 需要）创建 API 令牌**：R2 概览页 → 管理 API 令牌 → 创建 API 令牌，权限选「对象读和写」，并限定到这个存储桶。记下 **访问密钥 ID**、**机密访问密钥**，以及概览页上的 **账户 ID**。
 
-> 无需像公共版文档那样给存储桶配置 CORS 规则。
+> 不需要给存储桶配置 CORS 规则。
 
 ## 2. 部署到 Cloudflare Workers（免费）
 
@@ -116,12 +116,12 @@ docker compose up -d --build
 
 ```bash
 pnpm install
-pnpm --filter s3-image-port-web build:selfhost
+pnpm --filter s3-image-port-web build
 cp selfhost/.env.example selfhost/.env   # 然后编辑
 node --env-file=selfhost/.env apps/web/.output/server/index.mjs
 ```
 
-默认监听 3000 端口，可以用 `PORT` 修改。注意要用 `build:selfhost` 构建，普通的 `build` 得到的是需要手动填写 S3 参数的公共版。
+默认监听 3000 端口，可以用 `PORT` 修改。
 
 ## Docker / Node 的环境变量
 
