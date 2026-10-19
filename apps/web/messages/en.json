@@ -127,6 +127,16 @@
       "s3ConfigDesc": "S3 settings are not valid or not configured, please check in the settings page.",
       "editLink": "Edit Settings"
     },
+    "preset": {
+      "title": "Load preset settings",
+      "description": "This deployment has preset S3 settings. Enter the access password to load them into this browser.",
+      "passwordPlaceholder": "Access password",
+      "load": "Load",
+      "loaded": "Loaded preset profile \"{name}\"",
+      "wrongPassword": "Wrong access password",
+      "tooManyRequests": "Too many attempts, please try again later",
+      "failed": "Failed to load preset settings"
+    },
     "gallery": {
       "title": "Gallery",
       "autoRefresh": "Auto Refresh",

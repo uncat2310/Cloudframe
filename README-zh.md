@@ -42,6 +42,28 @@ S3 Image Port 是一个控制面板，用于管理 AWS S3 存储桶或 S3 兼容
 
 您也可以在一定程度上自定义此应用面板。进入 "设置 "页面，您可以配置一些重要选项。
 
+### 自部署：服务器预设配置
+
+S3 配置保存在浏览器的 localStorage 中，换浏览器、换设备、清除站点数据或者换了访问域名（比如 Vercel 每次部署生成的预览地址）后都需要重新填写。
+
+自部署时可以把配置放在服务器环境变量里（如 Vercel 的 Environment Variables），新浏览器打开上传/图库页时，弹出的「S3 配置不正确」对话框中会出现「加载预设配置」，输入访问密码即可一键载入：
+
+| 环境变量                        | 说明                                   |
+| ------------------------------- | -------------------------------------- |
+| `S3IP_PRESET_PASSWORD`          | 访问密码（必填，未设置则不启用此功能） |
+| `S3IP_PRESET_ENDPOINT`          | S3 Endpoint（必填）                    |
+| `S3IP_PRESET_BUCKET`            | 存储桶名（必填）                       |
+| `S3IP_PRESET_REGION`            | 区域，默认 `auto`                      |
+| `S3IP_PRESET_ACCESS_KEY_ID`     | Access Key ID（必填）                  |
+| `S3IP_PRESET_SECRET_ACCESS_KEY` | Secret Access Key（必填）              |
+| `S3IP_PRESET_PUBLIC_URL`        | 图片公开访问地址（必填）               |
+| `S3IP_PRESET_FORCE_PATH_STYLE`  | 设为 `true` 启用 path-style            |
+| `S3IP_PRESET_INCLUDE_PATH`      | 图库只显示该前缀下的图片（可选）       |
+| `S3IP_PRESET_KEY_TEMPLATE`      | 上传路径模板（可选）                   |
+| `S3IP_PRESET_PROFILE_NAME`      | 载入后的配置名，默认 `Preset`          |
+
+密码保护的是你的 S3 密钥，请使用足够强的密码；接口按 IP 限制为每分钟 10 次尝试。
+
 ## 反馈和贡献
 
 如果您遇到任何问题或有任何建议，请随时提出 [Issue](https://github.com/yy4382/s3-image-port/issues/new/choose)。

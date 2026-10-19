@@ -48,7 +48,9 @@ function logRedisFailure(error: unknown) {
   }
 }
 
-function createHybridLimiter(options: HybridLimiterOptions): Ratelimiter {
+export function createHybridLimiter(
+  options: HybridLimiterOptions,
+): Ratelimiter {
   const memoryLimiter = new MemoryRatelimiter({
     maxRequests: options.maxRequests,
     window: options.windowMs,
@@ -95,7 +97,7 @@ const uploadIpLimiter = createHybridLimiter({
   ...IP_RATE_LIMIT,
 });
 
-function getClientIp(context: UploadContext): string {
+export function getClientIp(context: RequestHeadersPluginContext): string {
   const headers = context.reqHeaders;
   const forwarded = headers?.get("x-forwarded-for");
   if (forwarded) {
