@@ -2,6 +2,7 @@ import { z } from "zod";
 import { LRUCache } from "lru-cache";
 import { debounce } from "es-toolkit/function";
 import { atom } from "jotai";
+import { storageKeys } from "@/lib/storage-keys";
 
 /**
  * LRU cache for storing natural image dimensions (width × height) to avoid re-calculating
@@ -29,7 +30,7 @@ export const naturalSizesAtom = atom((get) => {
 });
 
 // sync with localStorage
-const localStorageKey = "s3ip:gallery:naturalSizeCache";
+const localStorageKey = storageKeys.naturalSizeCache;
 naturalSizeDirtyNotificationAtom.onMount = () => {
   // the `naturalSizeDirtyNotificationAtom` is always mounted when `naturalSizesAtom` is mounted
   // so we can use its onMount to sync with localStorage

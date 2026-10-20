@@ -28,7 +28,7 @@ describe("natural-size cache", () => {
     const removeItem = vi.spyOn(Storage.prototype, "removeItem");
     const setItem = vi.spyOn(Storage.prototype, "setItem");
     localStorage.setItem(
-      "s3ip:gallery:naturalSizeCache",
+      "cloudframe:gallery:naturalSizeCache",
       JSON.stringify([["i/old-profile.webp", [1200, 800]]]),
     );
     removeItem.mockClear();
@@ -37,18 +37,25 @@ describe("natural-size cache", () => {
 
     store.set(clearNaturalSizeCacheAtom);
     expect(removeItem).toHaveBeenCalledTimes(1);
-    expect(removeItem).toHaveBeenCalledWith("s3ip:gallery:naturalSizeCache");
+    expect(removeItem).toHaveBeenCalledWith(
+      "cloudframe:gallery:naturalSizeCache",
+    );
     expect(setItem).not.toHaveBeenCalled();
-    expect(localStorage.getItem("s3ip:gallery:naturalSizeCache")).toBeNull();
+    expect(
+      localStorage.getItem("cloudframe:gallery:naturalSizeCache"),
+    ).toBeNull();
     const unsubscribe = store.sub(naturalSizesAtom, () => {});
 
     expect(store.get(naturalSizesAtom)[0].size).toBe(0);
     vi.advanceTimersByTime(1000);
     expect(setItem).toHaveBeenCalledTimes(1);
-    expect(setItem).toHaveBeenCalledWith("s3ip:gallery:naturalSizeCache", "[]");
+    expect(setItem).toHaveBeenCalledWith(
+      "cloudframe:gallery:naturalSizeCache",
+      "[]",
+    );
     expect(
       JSON.parse(
-        localStorage.getItem("s3ip:gallery:naturalSizeCache") ?? "null",
+        localStorage.getItem("cloudframe:gallery:naturalSizeCache") ?? "null",
       ),
     ).toEqual([]);
     expect(store.get(naturalSizesAtom)[0].size).toBe(0);
@@ -57,7 +64,7 @@ describe("natural-size cache", () => {
   });
 
   it("falls back from malformed persisted data and keeps its payload format", () => {
-    localStorage.setItem("s3ip:gallery:naturalSizeCache", "not json");
+    localStorage.setItem("cloudframe:gallery:naturalSizeCache", "not json");
     const store = createStore();
     const unsubscribe = store.sub(naturalSizesAtom, () => {});
 
@@ -66,7 +73,7 @@ describe("natural-size cache", () => {
     vi.runOnlyPendingTimers();
     expect(
       JSON.parse(
-        localStorage.getItem("s3ip:gallery:naturalSizeCache") ?? "null",
+        localStorage.getItem("cloudframe:gallery:naturalSizeCache") ?? "null",
       ),
     ).toEqual([["i/a.webp", [640, 480]]]);
 

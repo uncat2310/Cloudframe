@@ -67,7 +67,7 @@ class SubscribableSettingsStorage extends ControllableStorage {
 describe("settings interface", () => {
   it("keeps injected persistence lazy until the settings atom is mounted", () => {
     const persistence = new ControllableStorage({
-      "s3ip:profiles-list": JSON.stringify({
+      "cloudframe:profiles-list": JSON.stringify({
         version: 3,
         data: {
           current: -1,
@@ -86,7 +86,7 @@ describe("settings interface", () => {
     expect(persistence.getCalls).toEqual([]);
 
     const unsubscribe = store.sub(settings.profiles, () => {});
-    expect(persistence.getCalls).toEqual(["s3ip:profiles-list"]);
+    expect(persistence.getCalls).toEqual(["cloudframe:profiles-list"]);
     expect(store.get(settings.profiles).profiles.list[0][0]).toBe("Persisted");
     expect(store.get(settings.profiles).profiles.current).toBe(0);
     expect(persistence.setCalls).toEqual([]);
@@ -202,7 +202,10 @@ describe("settings interface", () => {
       draft.list[0][1].s3 = validStorageSettings();
     });
     const persistence = new SubscribableSettingsStorage({
-      "s3ip:profiles-list": JSON.stringify({ version: 3, data: hydrated }),
+      "cloudframe:profiles-list": JSON.stringify({
+        version: 3,
+        data: hydrated,
+      }),
     });
     const imageStorage = createCountedImageStorage();
     const settings = createSettings({
@@ -228,7 +231,7 @@ describe("settings interface", () => {
       },
     );
     persistence.externalSet(
-      "s3ip:profiles-list",
+      "cloudframe:profiles-list",
       JSON.stringify({ version: 3, data: metadataOnly }),
     );
     expect(store.get(settings.storage).revision).toBe(tested.revision);
@@ -239,7 +242,7 @@ describe("settings interface", () => {
       draft.list[draft.current][1].s3.bucket = "external-images";
     });
     persistence.externalSet(
-      "s3ip:profiles-list",
+      "cloudframe:profiles-list",
       JSON.stringify({ version: 3, data: storageChanged }),
     );
     expect(store.get(settings.storage).revision).toBe(tested.revision + 1);

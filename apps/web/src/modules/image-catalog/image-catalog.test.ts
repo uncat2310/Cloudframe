@@ -109,7 +109,7 @@ describe("deep image catalog", () => {
 
   it("classifies the bare cache and records malformed cache without IO", () => {
     const cache = new ControllableStorage({
-      "s3ip:gallery:photos": "not json",
+      "cloudframe:gallery:photos": "not json",
     });
     const storage = createCountedImageStorage();
     const catalog = createImageCatalog({
@@ -133,7 +133,7 @@ describe("deep image catalog", () => {
   it("distinguishes cached empty and preserves prefix/filter/sort/page derivations", () => {
     const emptyCatalog = createImageCatalog({
       cacheStorage: new ControllableStorage({
-        "s3ip:gallery:photos": "[]",
+        "cloudframe:gallery:photos": "[]",
       }),
     });
     const emptyStore = configuredStore();
@@ -169,7 +169,7 @@ describe("deep image catalog", () => {
     ];
     const catalog = createImageCatalog({
       cacheStorage: new ControllableStorage({
-        "s3ip:gallery:photos": JSON.stringify(images),
+        "cloudframe:gallery:photos": JSON.stringify(images),
       }),
     });
     const store = createStore();
@@ -216,7 +216,7 @@ describe("deep image catalog", () => {
     };
     const catalog = createImageCatalog({
       cacheStorage: new ControllableStorage({
-        "s3ip:gallery:photos": JSON.stringify([deeplyNestedImage, alpha]),
+        "cloudframe:gallery:photos": JSON.stringify([deeplyNestedImage, alpha]),
       }),
     });
     const store = configuredStore();
@@ -243,7 +243,7 @@ describe("deep image catalog", () => {
     "keeps a $name cache target-unsafe when it hydrated before settings",
     async ({ images }) => {
       const cache = new ControllableStorage({
-        "s3ip:gallery:photos": JSON.stringify(images),
+        "cloudframe:gallery:photos": JSON.stringify(images),
       });
       const storage = createCountedImageStorage({
         overrides: {
@@ -311,7 +311,7 @@ describe("deep image catalog", () => {
   it("keeps a ready bare cache unbound when settings are ready before hydration", () => {
     const catalog = createImageCatalog({
       cacheStorage: new ControllableStorage({
-        "s3ip:gallery:photos": JSON.stringify([alpha]),
+        "cloudframe:gallery:photos": JSON.stringify([alpha]),
       }),
     });
     const store = createStore();

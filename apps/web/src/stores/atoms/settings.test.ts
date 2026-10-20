@@ -28,7 +28,7 @@ function currentOptions(
 describe("persisted settings profiles", () => {
   it("loads the existing versioned envelope without rewriting its shape", async () => {
     localStorage.setItem(
-      "s3ip:profiles-list",
+      "cloudframe:profiles-list",
       JSON.stringify({
         data: {
           list: [
@@ -63,7 +63,7 @@ describe("persisted settings profiles", () => {
     ["unknown version", { version: 999, data: "random" }],
   ])("uses defaults for %s storage", async (_name, stored) => {
     if (stored !== undefined) {
-      localStorage.setItem("s3ip:profiles-list", JSON.stringify(stored));
+      localStorage.setItem("cloudframe:profiles-list", JSON.stringify(stored));
     }
     const { result } = await renderHook(useSettingsTestSeam, {
       wrapper: Provider,
@@ -125,7 +125,7 @@ describe("v2 to v3 migration", () => {
       }),
     );
     await unmount();
-    expect(localStorage.getItem("s3ip:profiles-list")).not.toBeNull();
+    expect(localStorage.getItem("cloudframe:profiles-list")).not.toBeNull();
     expect(localStorage.getItem("s3ip:options")).toBeNull();
     expect(localStorage.getItem("s3ip:profile:profiles")).toBeNull();
   });
