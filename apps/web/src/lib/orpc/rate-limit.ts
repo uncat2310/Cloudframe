@@ -60,7 +60,7 @@ export function createWorkersLimiter(
  * The client IP, from a header that only a trusted party can set:
  *
  * - On Workers, `CF-Connecting-IP`, which Cloudflare's edge always overwrites.
- * - Elsewhere, only the header named by `trustedHeader` (S3IP_CLIENT_IP_HEADER),
+ * - Elsewhere, only the header named by `trustedHeader` (CLOUDFRAME_CLIENT_IP_HEADER),
  *   for a server behind a reverse proxy that sets it. For `X-Forwarded-For`
  *   the last entry is used: it is the one the proxy appended, the earlier
  *   ones are whatever the client sent.

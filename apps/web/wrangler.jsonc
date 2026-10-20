@@ -35,6 +35,6 @@
     "R2_PUBLIC_URL": "https://i.as4837.de"
   }
   // The login password is a secret, never put it here:
-  //   npx wrangler@4 secret put S3IP_PASSWORD -c .output/server/wrangler.json
+  //   npx wrangler@4 secret put CLOUDFRAME_PASSWORD -c .output/server/wrangler.json
   // or Dashboard -> Workers -> cloudframe -> Settings -> Variables and Secrets.
 }
