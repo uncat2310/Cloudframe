@@ -36,7 +36,7 @@
 1. 在 Cloudflare 创建 R2 存储桶，开启公开访问（自定义域名或 r2.dev）；
 2. Fork 本仓库，在 `apps/web/wrangler.jsonc` 里填上存储桶名称和公开地址；没有自己的域名时，把 `workers_dev` 改成 `true`；
 3. Cloudflare 控制台 → Workers 和 Pages → 导入 Git 仓库，填写构建命令和部署命令；
-4. 在 Worker 的「运行时变量和密钥」里添加 `S3IP_PASSWORD`（登录密码）和 `S3IP_SESSION_SECRET`（一串随机字符），**都要勾选「密钥」**；
+4. 在 Worker 的「运行时变量和密钥」里添加 `CLOUDFRAME_PASSWORD`（登录密码）和 `CLOUDFRAME_SESSION_SECRET`（一串随机字符），**都要勾选「密钥」**；
 5. 在 Worker → 域 里绑定自己的域名（例如 `pic.example.com`），再给它加一条登录速率限制规则；
 6. 打开你的域名，输入密码即可。
 

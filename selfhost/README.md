@@ -69,14 +69,14 @@ Worker 通过 **R2 绑定** 直接读写存储桶，不需要创建 API 令牌�
 
 Worker → 设置 → 运行时变量和密钥（确认上方选中的是「生产」）→ 添加变量。每一个都要**勾选「值」输入框右侧的「密钥」复选框**，再点「添加 1 个变量并部署」：
 
-| 名称                  | 值                                                                          |
-| --------------------- | --------------------------------------------------------------------------- |
-| `S3IP_PASSWORD`       | 你的登录密码，建议 16 位以上的随机字符                                      |
-| `S3IP_SESSION_SECRET` | 用来签名登录 cookie 的随机字符串，在终端运行 `openssl rand -base64 32` 生成 |
+| 名称                        | 值                                                                          |
+| --------------------------- | --------------------------------------------------------------------------- |
+| `CLOUDFRAME_PASSWORD`       | 你的登录密码，建议 16 位以上的随机字符                                      |
+| `CLOUDFRAME_SESSION_SECRET` | 用来签名登录 cookie 的随机字符串，在终端运行 `openssl rand -base64 32` 生成 |
 
 保存后检查一下：这两行的类型应该显示为「密钥」，值显示为「值已加密」。如果显示为「变量」并且能看到明文，说明没有勾选「密钥」，把它删掉重新添加。
 
-> 不设置 `S3IP_SESSION_SECRET` 也能用，但登录 cookie 只用由密码派生的密钥签名：cookie 一旦泄露，就可能被离线暴力破解出密码。设置后平时使用没有任何区别；想让所有设备立即登出时，换一个新值即可。
+> 不设置 `CLOUDFRAME_SESSION_SECRET` 也能用，但登录 cookie 只用由密码派生的密钥签名：cookie 一旦泄露，就可能被离线暴力破解出密码。设置后平时使用没有任何区别；想让所有设备立即登出时，换一个新值即可。
 
 ### 2.4 绑定自己的域名
 
@@ -111,8 +111,8 @@ pnpm --filter cloudframe-web build:worker
 cd apps/web
 npx wrangler@4 login                 # 浏览器里授权一次
 pnpm deploy:worker
-npx wrangler@4 secret put S3IP_PASSWORD -c .output/server/wrangler.json
-npx wrangler@4 secret put S3IP_SESSION_SECRET -c .output/server/wrangler.json
+npx wrangler@4 secret put CLOUDFRAME_PASSWORD -c .output/server/wrangler.json
+npx wrangler@4 secret put CLOUDFRAME_SESSION_SECRET -c .output/server/wrangler.json
 ```
 
 使用自定义域名时，部署后同样按 2.4 在后台绑定域名。
@@ -121,11 +121,11 @@ npx wrangler@4 secret put S3IP_SESSION_SECRET -c .output/server/wrangler.json
 
 在 Worker 设置 → 运行时变量和密钥里添加（`wrangler.jsonc` 开启了 `keep_vars`，重新部署不会清掉它们）：
 
-| 变量                | 说明                                        |
-| ------------------- | ------------------------------------------- |
-| `R2_INCLUDE_PATH`   | 面板只能查看和操作该前缀下的文件，例如 `i/` |
-| `S3IP_KEY_TEMPLATE` | 新浏览器的默认上传路径模板                  |
-| `R2_BUCKET`         | 仅用于在设置页显示存储桶名称                |
+| 变量                      | 说明                                        |
+| ------------------------- | ------------------------------------------- |
+| `R2_INCLUDE_PATH`         | 面板只能查看和操作该前缀下的文件，例如 `i/` |
+| `CLOUDFRAME_KEY_TEMPLATE` | 新浏览器的默认上传路径模板                  |
+| `R2_BUCKET`               | 仅用于在设置页显示存储桶名称                |
 
 `wrangler.jsonc` 里的 `LOGIN_RATE_LIMITER` 是 Cloudflare 的限流绑定，用来在 Worker 实例之间共享登录次数（近似计数），不需要额外设置。分支预览地址（`preview_urls`）默认关闭，因为预览版本会使用和正式版相同的存储桶与密码。
 
@@ -147,7 +147,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-浏览器打开 `http://服务器IP:3000`，输入 `S3IP_PASSWORD` 即可。登录状态保存 30 天；修改密码后所有浏览器都需要重新登录。
+浏览器打开 `http://服务器IP:3000`，输入 `CLOUDFRAME_PASSWORD` 即可。登录状态保存 30 天；修改密码后所有浏览器都需要重新登录。
 
 更新版本：
 
@@ -171,31 +171,33 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs
 
 ## Docker / Node 的环境变量
 
-| 变量                    | 必填 | 说明                                                                      |
-| ----------------------- | ---- | ------------------------------------------------------------------------- |
-| `S3IP_PASSWORD`         | 是   | 面板登录密码                                                              |
-| `R2_ACCOUNT_ID`         | 是\* | Cloudflare 账户 ID，用来拼出 S3 Endpoint                                  |
-| `R2_ACCESS_KEY_ID`      | 是   | API 令牌的访问密钥 ID                                                     |
-| `R2_SECRET_ACCESS_KEY`  | 是   | API 令牌的机密访问密钥                                                    |
-| `R2_BUCKET`             | 是   | 存储桶名称                                                                |
-| `R2_PUBLIC_URL`         | 是   | 公开访问地址（自定义域名或 r2.dev 地址）                                  |
-| `R2_INCLUDE_PATH`       | 否   | 面板只能查看和操作该前缀下的文件，例如 `i/`                               |
-| `S3IP_KEY_TEMPLATE`     | 否   | 新浏览器的默认上传路径模板                                                |
-| `R2_ENDPOINT`           | 否   | 覆盖 Endpoint（\*设置后可不填 `R2_ACCOUNT_ID`），如欧盟区域的 `.eu.` 地址 |
-| `S3IP_SESSION_SECRET`   | 否   | 登录会话签名密钥，默认使用 `R2_SECRET_ACCESS_KEY`                         |
-| `S3IP_CLIENT_IP_HEADER` | 否   | 反向代理传递客户端 IP 的请求头，例如 `x-forwarded-for`，见下方安全建议    |
-| `PORT`                  | 否   | 监听端口，默认 3000                                                       |
+| 变量                          | 必填 | 说明                                                                      |
+| ----------------------------- | ---- | ------------------------------------------------------------------------- |
+| `CLOUDFRAME_PASSWORD`         | 是   | 面板登录密码                                                              |
+| `R2_ACCOUNT_ID`               | 是\* | Cloudflare 账户 ID，用来拼出 S3 Endpoint                                  |
+| `R2_ACCESS_KEY_ID`            | 是   | API 令牌的访问密钥 ID                                                     |
+| `R2_SECRET_ACCESS_KEY`        | 是   | API 令牌的机密访问密钥                                                    |
+| `R2_BUCKET`                   | 是   | 存储桶名称                                                                |
+| `R2_PUBLIC_URL`               | 是   | 公开访问地址（自定义域名或 r2.dev 地址）                                  |
+| `R2_INCLUDE_PATH`             | 否   | 面板只能查看和操作该前缀下的文件，例如 `i/`                               |
+| `CLOUDFRAME_KEY_TEMPLATE`     | 否   | 新浏览器的默认上传路径模板                                                |
+| `R2_ENDPOINT`                 | 否   | 覆盖 Endpoint（\*设置后可不填 `R2_ACCOUNT_ID`），如欧盟区域的 `.eu.` 地址 |
+| `CLOUDFRAME_SESSION_SECRET`   | 否   | 登录会话签名密钥，默认使用 `R2_SECRET_ACCESS_KEY`                         |
+| `CLOUDFRAME_CLIENT_IP_HEADER` | 否   | 反向代理传递客户端 IP 的请求头，例如 `x-forwarded-for`，见下方安全建议    |
+| `PORT`                        | 否   | 监听端口，默认 3000                                                       |
 
 配置不完整时，面板会直接列出缺少或填错的变量，服务器日志里也会打印。
+
+> 改名前的变量名（`S3IP_PASSWORD`、`S3IP_SESSION_SECRET` 等 `S3IP_` 开头的名字）仍然有效；两种都设置时以 `CLOUDFRAME_` 开头的为准。
 
 ## 安全建议
 
 - 密码就是你存储桶的钥匙，请用足够长的随机密码（16 位以上）。
 - 登录限流：每个 IP 每分钟最多 10 次，所有来源合计每分钟最多 60 次。
   - Workers 上用 Cloudflare 提供、无法伪造的 `CF-Connecting-IP` 识别 IP。计数由 Cloudflare 的限流绑定在实例之间共享，但只是近似值，大量分散的新连接仍可能超出限制，所以建议再按 2.5 加上域名的速率限制规则。
-  - Docker / Node 默认不信任任何转发头（客户端可以随意伪造），所有请求共用一个计数。放在反向代理后面时，把 `S3IP_CLIENT_IP_HEADER` 设为代理写入的请求头（Caddy / Nginx 一般是 `x-forwarded-for`，Cloudflare Tunnel 是 `cf-connecting-ip`），才会按 IP 分别计数。**不要在没有代理时设置它。**
+  - Docker / Node 默认不信任任何转发头（客户端可以随意伪造），所有请求共用一个计数。放在反向代理后面时，把 `CLOUDFRAME_CLIENT_IP_HEADER` 设为代理写入的请求头（Caddy / Nginx 一般是 `x-forwarded-for`，Cloudflare Tunnel 是 `cf-connecting-ip`），才会按 IP 分别计数。**不要在没有代理时设置它。**
 - 只能上传图片和视频（Live Photo 的 `.mov`）。
-- 登录状态保存 30 天，「退出登录」只清除当前浏览器的 cookie。想让所有设备失效，修改 `S3IP_SESSION_SECRET` 或密码即可。
+- 登录状态保存 30 天，「退出登录」只清除当前浏览器的 cookie。想让所有设备失效，修改 `CLOUDFRAME_SESSION_SECRET` 或密码即可。
 - Workers 自带 HTTPS。Docker / Node **暴露到公网时请加 HTTPS**，否则密码会明文传输。例如用 Caddy 反向代理（自动申请证书）：
 
   ```

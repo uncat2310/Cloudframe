@@ -36,7 +36,7 @@ On Workers, in short (section 2 of the guide has every click):
 1. Create an R2 bucket and enable public access (custom domain or r2.dev);
 2. Fork this repo and set the bucket name and public URL in `apps/web/wrangler.jsonc`; without a domain of your own, set `workers_dev` to `true`;
 3. Cloudflare dashboard → Workers & Pages → import the Git repository, with the build and deploy commands from the guide;
-4. Add `S3IP_PASSWORD` (login password) and `S3IP_SESSION_SECRET` (a long random string) under the Worker's Variables and Secrets, **both as secrets**;
+4. Add `CLOUDFRAME_PASSWORD` (login password) and `CLOUDFRAME_SESSION_SECRET` (a long random string) under the Worker's Variables and Secrets, **both as secrets**;
 5. Attach your own domain under the Worker's Domains (e.g. `pic.example.com`) and add a login rate-limiting rule to it;
 6. Open your domain and sign in.
 

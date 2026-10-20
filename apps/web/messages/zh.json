@@ -199,7 +199,7 @@
     "notConfiguredTitle": "服务器尚未配置",
     "notConfiguredDesc": "请在服务器上设置以下环境变量后重启：",
     "loginTitle": "登录",
-    "loginDesc": "输入在 S3IP_PASSWORD 中设置的访问密码。",
+    "loginDesc": "输入在 CLOUDFRAME_PASSWORD 中设置的访问密码。",
     "password": "密码",
     "login": "登录",
     "wrongPassword": "密码错误",

@@ -1,6 +1,6 @@
 import type { SelfHostConfig } from "./config";
 
-const COOKIE_NAME = "s3ip_session";
+const COOKIE_NAME = "cloudframe_session";
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 const encoder = new TextEncoder();

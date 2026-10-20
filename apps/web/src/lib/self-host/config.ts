@@ -47,6 +47,14 @@ function readEnv(name: string) {
   return value ? value : undefined;
 }
 
+/**
+ * A Cloudframe setting, read from `CLOUDFRAME_<name>`, falling back to the
+ * `S3IP_<name>` name used before the rename so older deployments keep working.
+ */
+export function readSetting(name: string) {
+  return readEnv(`CLOUDFRAME_${name}`) ?? readEnv(`S3IP_${name}`);
+}
+
 const fieldEnvNames: Partial<Record<keyof S3Options, string>> = {
   endpoint: "R2_ACCOUNT_ID / R2_ENDPOINT",
   bucket: "R2_BUCKET",
@@ -70,8 +78,8 @@ export function loadSelfHostConfig(): SelfHostConfigResult {
   if (cached) return cached;
 
   const problems: string[] = [];
-  const password = readEnv("S3IP_PASSWORD");
-  if (!password) problems.push("S3IP_PASSWORD is not set");
+  const password = readSetting("PASSWORD");
+  if (!password) problems.push("CLOUDFRAME_PASSWORD is not set");
 
   const binding = workerBinding(R2_BINDING_NAME);
   const backend: SelfHostConfig["backend"] = isR2BucketLike(binding)
@@ -134,10 +142,10 @@ export function loadSelfHostConfig(): SelfHostConfigResult {
     return { ok: false, problems };
   }
 
-  const sessionSecret = readEnv("S3IP_SESSION_SECRET");
+  const sessionSecret = readSetting("SESSION_SECRET");
   if (!sessionSecret && backend.type === "r2-binding") {
     console.warn(
-      "[self-host] S3IP_SESSION_SECRET is not set: login cookies are signed with a key derived from the password alone. Add a long random secret.",
+      "[self-host] CLOUDFRAME_SESSION_SECRET is not set: login cookies are signed with a key derived from the password alone. Add a long random secret.",
     );
   }
 
@@ -151,7 +159,7 @@ export function loadSelfHostConfig(): SelfHostConfigResult {
       // password, so changing the password signs every browser out.
       sessionSecret:
         sessionSecret ?? (backend.type === "s3" ? s3.data.secretAccKey : ""),
-      keyTemplate: readEnv("S3IP_KEY_TEMPLATE"),
+      keyTemplate: readSetting("KEY_TEMPLATE"),
     },
   };
   return cached;
