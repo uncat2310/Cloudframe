@@ -31,19 +31,20 @@
 | [Docker](selfhost/README.md#3-用-docker-部署vps-或电脑)                  | 服务器费用   | VPS 或常开的电脑，R2 API 令牌       |
 | [直接运行 Node](selfhost/README.md#4-不用-docker直接在电脑上运行)        | 无           | Node.js 22，R2 API 令牌             |
 
-以 Workers 为例，大致流程是：
+以 Workers 为例，大致流程是（每一步的具体操作见部署指南第 2 节）：
 
 1. 在 Cloudflare 创建 R2 存储桶，开启公开访问（自定义域名或 r2.dev）；
-2. Fork 本仓库，在 `apps/web/wrangler.jsonc` 里填上存储桶名称和公开地址；
+2. Fork 本仓库，在 `apps/web/wrangler.jsonc` 里填上存储桶名称和公开地址；没有自己的域名时，把 `workers_dev` 改成 `true`；
 3. Cloudflare 控制台 → Workers 和 Pages → 导入 Git 仓库，填写构建命令和部署命令；
-4. 在 Worker 的「变量和机密」里添加机密 `S3IP_PASSWORD`（登录密码）和 `S3IP_SESSION_SECRET`（一串随机字符）；
-5. 打开 `https://<Worker 名称>.<你的子域>.workers.dev`，输入密码即可。
+4. 在 Worker 的「运行时变量和密钥」里添加 `S3IP_PASSWORD`（登录密码）和 `S3IP_SESSION_SECRET`（一串随机字符），**都要勾选「密钥」**；
+5. 在 Worker → 域 里绑定自己的域名（例如 `pic.example.com`），再给它加一条登录速率限制规则；
+6. 打开你的域名，输入密码即可。
 
 之后每次推送到 main 都会自动重新部署。
 
 ## 安全
 
-- 登录有限流：每个 IP 每分钟最多 10 次，所有来源合计每分钟最多 60 次；Workers 上使用 Cloudflare 提供、无法伪造的客户端 IP。
+- 登录有限流：每个 IP 每分钟最多 10 次，所有来源合计每分钟最多 60 次；Workers 上使用 Cloudflare 提供、无法伪造的客户端 IP。配合域名上的 Cloudflare 速率限制规则，可以精确拦截暴力猜密码。
 - 登录状态用签名 cookie 保存（HttpOnly、SameSite=Strict），有效期 30 天。
 - 只允许上传图片和视频；通过面板读取的文件在沙箱中返回，不会被当成网页执行。
 - 所有响应都带安全响应头：禁止被嵌入其他网站、禁止 MIME 嗅探、启用 HSTS 等。
