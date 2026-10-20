@@ -13,7 +13,7 @@ const withVersionSchema = zodWithVersion(z.unknown());
 const storageInitialToken =
   "INITIAL_VALUE_THAT_INDICATES_THAT_THE_STORAGE_IS_NOT_INITIALIZED";
 
-export function createStorageMigration<K extends z4.$ZodObject>(dataOptions: {
+function createStorageMigration<K extends z4.$ZodObject>(dataOptions: {
   schema: K;
   initialFn: () => z4.infer<K>;
   version: number;

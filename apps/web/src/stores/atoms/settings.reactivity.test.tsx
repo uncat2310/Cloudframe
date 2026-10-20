@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 import { renderHook } from "vitest-browser-react";
 
 import { imageCatalog } from "@/modules/image-catalog";
-import { getDefaultOptions } from "@/stores/schemas/settings";
 import { createDeferred, settle } from "@/test/helpers/deterministic";
 import { createCountedImageStorage } from "@/test/helpers/image-storage";
 import { ControllableStorage } from "@/test/helpers/storage";
@@ -24,7 +23,7 @@ const validStorage = {
 };
 
 describe("settings React reactivity", () => {
-  it("updates only the relevant profile, storage, upload, gallery, access, and catalog readers", async () => {
+  it("updates only the relevant storage, upload, gallery, access, and catalog readers", async () => {
     const access = createDeferred<{
       ok: true;
       value: { allowedMethods: ["GET"] };
@@ -65,7 +64,6 @@ describe("settings React reactivity", () => {
     }
 
     const readers = {
-      profiles: await watch(settings.profiles),
       raw: await watch(rawAtom),
       validation: await watch(validationAtom),
       access: await watch(accessAtom),
@@ -93,7 +91,6 @@ describe("settings React reactivity", () => {
     expect(readers.raw.hook.result.current.bucket).toBe("images");
     expect(readers.validation.hook.result.current.status).toBe("valid");
     expect(delta(before)).toEqual({
-      profiles: 1,
       raw: 1,
       validation: 1,
       access: 0,
@@ -111,7 +108,6 @@ describe("settings React reactivity", () => {
       }));
     });
     expect(delta(before)).toEqual({
-      profiles: 1,
       raw: 0,
       validation: 0,
       access: 0,
@@ -129,7 +125,6 @@ describe("settings React reactivity", () => {
       }));
     });
     expect(delta(before)).toEqual({
-      profiles: 1,
       raw: 0,
       validation: 0,
       access: 0,
@@ -138,24 +133,6 @@ describe("settings React reactivity", () => {
       catalog: 0,
     });
     expect(persistence.setCalls).toHaveLength(3);
-
-    before = counts();
-    await readers.profiles.hook.act(() => {
-      store.set(settings.profiles, {
-        type: "import",
-        value: { name: "Work", data: getDefaultOptions() },
-      });
-    });
-    expect(delta(before)).toEqual({
-      profiles: 1,
-      raw: 0,
-      validation: 0,
-      access: 0,
-      upload: 0,
-      gallery: 0,
-      catalog: 0,
-    });
-    expect(persistence.setCalls).toHaveLength(4);
 
     let accessResult!: Promise<unknown>;
     before = counts();
@@ -166,7 +143,6 @@ describe("settings React reactivity", () => {
     });
     expect(readers.access.hook.result.current).toEqual({ status: "testing" });
     expect(delta(before)).toEqual({
-      profiles: 0,
       raw: 0,
       validation: 0,
       access: 1,
@@ -174,7 +150,7 @@ describe("settings React reactivity", () => {
       gallery: 0,
       catalog: 0,
     });
-    expect(persistence.setCalls).toHaveLength(4);
+    expect(persistence.setCalls).toHaveLength(3);
     expect(imageStorage.calls.createStorage).toHaveLength(1);
     expect(imageStorage.calls.checkAccess).toEqual([
       { origin: "https://app.example.com" },
@@ -190,7 +166,6 @@ describe("settings React reactivity", () => {
       allowedMethods: ["GET"],
     });
     expect(delta(before)).toEqual({
-      profiles: 0,
       raw: 0,
       validation: 0,
       access: 1,
@@ -198,7 +173,7 @@ describe("settings React reactivity", () => {
       gallery: 0,
       catalog: 0,
     });
-    expect(persistence.setCalls).toHaveLength(4);
+    expect(persistence.setCalls).toHaveLength(3);
 
     before = counts();
     await readers.catalog.hook.act(() => {
@@ -210,7 +185,6 @@ describe("settings React reactivity", () => {
       });
     });
     expect(delta(before)).toEqual({
-      profiles: 0,
       raw: 0,
       validation: 0,
       access: 0,
@@ -218,14 +192,13 @@ describe("settings React reactivity", () => {
       gallery: 0,
       catalog: 1,
     });
-    expect(persistence.setCalls).toHaveLength(4);
+    expect(persistence.setCalls).toHaveLength(3);
 
     before = counts();
     await readers.gallery.hook.act(() => {
       store.set(settings.gallery, structuredClone(store.get(settings.gallery)));
     });
     expect(delta(before)).toEqual({
-      profiles: 0,
       raw: 0,
       validation: 0,
       access: 0,
@@ -233,7 +206,7 @@ describe("settings React reactivity", () => {
       gallery: 0,
       catalog: 0,
     });
-    expect(persistence.setCalls).toHaveLength(4);
+    expect(persistence.setCalls).toHaveLength(3);
 
     const settled = counts();
     await settle();

@@ -4,13 +4,11 @@ import {
   getDefaultProfiles,
   type optionsSchema,
 } from "./v3";
-import { zodWithVersion } from "@/lib/atoms/atomWithStorageMigration";
 
 export const SETTINGS_STORE_VERSION = 3;
 
 export {
   optionsSchema,
-  optionsSchemaForLoad,
   getDefaultOptions,
   profilesSchema,
   profilesSchemaForLoad,
@@ -28,9 +26,5 @@ export function getDefaultStoredSettings(): z.infer<
 > {
   return getDefaultProfiles();
 }
-
-export const settingsForSyncSchema = zodWithVersion(
-  storedSettingsSchema.omit({ current: true }),
-);
 
 export type S3Options = z.infer<typeof optionsSchema.shape.s3>;

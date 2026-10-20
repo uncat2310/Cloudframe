@@ -92,27 +92,29 @@ describe("natural-size cache", () => {
       type: "update",
       value: (raw) => ({ ...raw, endpoint: "invalid ordinary edit" }),
     });
-    store.set(settings.profiles, {
-      type: "rename",
-      oldName: "Default",
-      newName: "Renamed",
-    });
+    expect(
+      store.set(replaceSettingsProfileAtom, {
+        type: "apply-imported",
+        value: (profiles) =>
+          produce(profiles, (draft) => {
+            draft.list[draft.current][0] = "Renamed";
+          }),
+      }),
+    ).toMatchObject({ profileReplaced: false });
     expect(notifications).toBe(0);
     expect(store.get(naturalSizesAtom)[0].get("i/a.webp")).toEqual([640, 480]);
 
-    store.set(settings.profiles, {
-      type: "import",
-      value: {
-        name: "Work",
-        data: produce(getDefaultOptions(), (draft) => {
-          draft.s3.endpoint = "https://replacement.example.com";
-        }),
-      },
+    const replacement = produce(getDefaultOptions(), (draft) => {
+      draft.s3.endpoint = "https://replacement.example.com";
     });
     expect(
       store.set(replaceSettingsProfileAtom, {
-        type: "activate",
-        name: "Work",
+        type: "apply-imported",
+        value: (profiles) =>
+          produce(profiles, (draft) => {
+            draft.list.push(["Work", replacement]);
+            draft.current = draft.list.length - 1;
+          }),
       }),
     ).toMatchObject({ profileReplaced: true });
     expect(store.get(naturalSizesAtom)[0].size).toBe(0);
@@ -120,8 +122,8 @@ describe("natural-size cache", () => {
 
     expect(
       store.set(replaceSettingsProfileAtom, {
-        type: "activate",
-        name: "Work",
+        type: "apply-imported",
+        value: (profiles) => profiles,
       }),
     ).toMatchObject({ profileReplaced: false });
     expect(notifications).toBe(1);

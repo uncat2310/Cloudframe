@@ -24,6 +24,16 @@ const catalogSelectionAtom = selectAtom(
   ({ keys }) => keys,
 );
 
+function profileList(current: number, ...names: string[]) {
+  return {
+    current,
+    list: names.map((name): [string, ReturnType<typeof getDefaultOptions>] => [
+      name,
+      getDefaultOptions(),
+    ]),
+  };
+}
+
 function validStorageSettings() {
   return {
     endpoint: "https://s3.example.com",
@@ -66,13 +76,16 @@ class SubscribableSettingsStorage extends ControllableStorage {
 
 describe("settings interface", () => {
   it("keeps injected persistence lazy until the settings atom is mounted", () => {
+    const persisted = produce(getDefaultOptions(), (draft) => {
+      draft.upload.keyTemplate = "persisted/{{filename}}.{{ext}}";
+    });
     const persistence = new ControllableStorage({
       "cloudframe:profiles-list": JSON.stringify({
         version: 3,
         data: {
           current: -1,
           list: [
-            ["Persisted", getDefaultOptions()],
+            ["Persisted", persisted],
             ["Other", getDefaultOptions()],
           ],
         },
@@ -82,24 +95,23 @@ describe("settings interface", () => {
     const store = createStore();
 
     expect(persistence.getCalls).toEqual([]);
-    expect(store.get(settings.profiles).profiles.list[0][0]).toBe("Default");
+    expect(store.get(settings.upload)).toEqual(getDefaultOptions().upload);
     expect(persistence.getCalls).toEqual([]);
 
-    const unsubscribe = store.sub(settings.profiles, () => {});
+    const unsubscribe = store.sub(settings.upload, () => {});
     expect(persistence.getCalls).toEqual(["cloudframe:profiles-list"]);
-    expect(store.get(settings.profiles).profiles.list[0][0]).toBe("Persisted");
-    expect(store.get(settings.profiles).profiles.current).toBe(0);
+    // An out-of-range current index falls back to the first entry.
+    expect(store.get(settings.upload)).toEqual(persisted.upload);
     expect(persistence.setCalls).toEqual([]);
     unsubscribe();
   });
 
-  it("exposes five atoms and treats structurally equal focused writes as no-ops", () => {
+  it("exposes four atoms and treats structurally equal focused writes as no-ops", () => {
     const persistence = new ControllableStorage();
     const settings = createSettings({ storage: persistence });
     const store = createStore();
 
     expect(Object.keys(settings)).toEqual([
-      "profiles",
       "storage",
       "upload",
       "gallery",
@@ -107,7 +119,6 @@ describe("settings interface", () => {
     ]);
 
     const before = {
-      profiles: store.get(settings.profiles),
       storage: store.get(settings.storage),
       upload: store.get(settings.upload),
       gallery: store.get(settings.gallery),
@@ -129,7 +140,6 @@ describe("settings interface", () => {
     ).toEqual({ status: "unchanged" });
     store.set(settings.upload, structuredClone(before.upload));
 
-    expect(store.get(settings.profiles)).toBe(before.profiles);
     expect(store.get(settings.storage)).toBe(before.storage);
     expect(store.get(settings.upload)).toBe(before.upload);
     expect(store.get(settings.gallery)).toBe(before.gallery);
@@ -160,7 +170,6 @@ describe("settings interface", () => {
     const initial = store.get(settings.storage);
     const upload = store.get(settings.upload);
     const gallery = store.get(settings.gallery);
-    const sync = store.get(settings.profiles).sync;
 
     expect(initial.validation.status).toBe("invalid");
     expect(initial.targetId).toBeUndefined();
@@ -181,7 +190,6 @@ describe("settings interface", () => {
     );
     expect(store.get(settings.upload)).toBe(upload);
     expect(store.get(settings.gallery)).toBe(gallery);
-    expect(store.get(settings.profiles).sync).not.toBe(sync);
 
     const validation = valid.validation;
     const targetId = valid.targetId;
@@ -224,12 +232,9 @@ describe("settings interface", () => {
     const tested = store.get(settings.storage);
     expect(tested.access).toMatchObject({ status: "success" });
 
-    const metadataOnly = produce(
-      store.get(settings.profiles).profiles,
-      (draft) => {
-        draft.list[draft.current][0] = "Renamed externally";
-      },
-    );
+    const metadataOnly = produce(hydrated, (draft) => {
+      draft.list[draft.current][0] = "Renamed externally";
+    });
     persistence.externalSet(
       "cloudframe:profiles-list",
       JSON.stringify({ version: 3, data: metadataOnly }),
@@ -260,64 +265,6 @@ describe("settings interface", () => {
     }
 
     unsubscribe();
-  });
-
-  it("keeps profile parsing, outcomes, export, ordering, and sync projection behind one atom", () => {
-    const settings = createSettings({ storage: new ControllableStorage() });
-    const store = createStore();
-
-    expect(
-      store.set(settings.profiles, {
-        type: "import",
-        value: JSON.stringify({ name: "Work", data: getDefaultOptions() }),
-      }),
-    ).toEqual({ status: "imported", name: "Work" });
-    expect(
-      store.set(settings.profiles, {
-        type: "import",
-        value: { name: "Work", data: getDefaultOptions() },
-      }),
-    ).toEqual({ status: "name-exists", name: "Work" });
-    expect(
-      store.set(settings.profiles, {
-        type: "duplicate",
-        name: "Work",
-        newName: "Work",
-      }),
-    ).toEqual({
-      status: "duplicated",
-      name: "Work",
-      newName: "Work (copy 2)",
-    });
-    expect(
-      store.set(settings.profiles, {
-        type: "rename",
-        oldName: "Missing",
-        newName: "Other",
-      }),
-    ).toEqual({ status: "not-found", name: "Missing" });
-    expect(
-      store.set(settings.profiles, { type: "delete", name: "Default" }),
-    ).toEqual({ status: "active-profile", name: "Default" });
-
-    expect(
-      store.set(settings.profiles, { type: "export", name: "Work" }),
-    ).toEqual({
-      status: "exported",
-      name: "Work",
-      value: JSON.stringify(
-        { name: "Work", data: getDefaultOptions() },
-        null,
-        2,
-      ),
-    });
-    expect(
-      store.set(settings.profiles, { type: "import", value: "not json" }),
-    ).toMatchObject({ status: "invalid" });
-
-    expect(
-      store.get(settings.profiles).profiles.list.map(([name]) => name),
-    ).toEqual(["Default", "Work", "Work (copy 2)"]);
   });
 
   it("tests current valid storage once and refuses invalid storage without IO", async () => {
@@ -452,38 +399,35 @@ describe("settings interface", () => {
     expect(imageStorage.calls.checkAccess).toHaveLength(2);
   });
 
-  it("classifies only genuine active settings-profile replacement", () => {
+  it("classifies only genuine active settings replacement", () => {
     const persistence = new ControllableStorage();
     const settings = createSettings({ storage: persistence });
     const store = createStore();
-    store.set(settings.profiles, {
-      type: "import",
-      value: { name: "Work", data: getDefaultOptions() },
-    });
-    expect(persistence.setCalls).toHaveLength(1);
-    const syncBeforeActivation = store.get(settings.profiles).sync;
-    const uploadBeforeActivation = store.get(settings.upload);
-    const galleryBeforeActivation = store.get(settings.gallery);
-    const storageBeforeActivation = store.get(settings.storage);
 
     expect(
       store.set(settings.replaceProfile, {
-        type: "activate",
-        name: "Missing",
+        type: "apply-imported",
+        value: profileList(0, "Default", "Work"),
       }),
     ).toEqual({
-      status: "not-found",
-      changed: false,
+      status: "applied",
+      changed: true,
       profileReplaced: false,
+      previousActiveName: "Default",
+      nextActiveName: "Default",
     });
     expect(persistence.setCalls).toHaveLength(1);
+    const uploadBefore = store.get(settings.upload);
+    const galleryBefore = store.get(settings.gallery);
+    const storageBefore = store.get(settings.storage);
+
     expect(
       store.set(settings.replaceProfile, {
-        type: "activate",
-        name: "Default",
+        type: "apply-imported",
+        value: profileList(0, "Default", "Work"),
       }),
     ).toEqual({
-      status: "already-active",
+      status: "unchanged",
       changed: false,
       profileReplaced: false,
       previousActiveName: "Default",
@@ -493,8 +437,8 @@ describe("settings interface", () => {
 
     expect(
       store.set(settings.replaceProfile, {
-        type: "activate",
-        name: "Work",
+        type: "apply-imported",
+        value: profileList(1, "Default", "Work"),
       }),
     ).toEqual({
       status: "applied",
@@ -504,33 +448,17 @@ describe("settings interface", () => {
       nextActiveName: "Work",
     });
     expect(persistence.setCalls).toHaveLength(2);
-    expect(store.get(settings.profiles).sync).toBe(syncBeforeActivation);
-    expect(store.get(settings.upload)).toBe(uploadBeforeActivation);
-    expect(store.get(settings.gallery)).toBe(galleryBeforeActivation);
-    expect(store.get(settings.storage)).toBe(storageBeforeActivation);
+    expect(store.get(settings.upload)).toBe(uploadBefore);
+    expect(store.get(settings.gallery)).toBe(galleryBefore);
+    expect(store.get(settings.storage)).toBe(storageBefore);
 
-    const equalSync = store.get(settings.profiles).sync;
     expect(
       store.set(settings.replaceProfile, {
-        type: "apply-sync",
-        value: structuredClone(equalSync),
-      }),
-    ).toEqual({
-      status: "unchanged",
-      changed: false,
-      profileReplaced: false,
-      previousActiveName: "Work",
-      nextActiveName: "Work",
-    });
-    expect(persistence.setCalls).toHaveLength(2);
-
-    const inactiveOnly = produce(equalSync, (draft) => {
-      draft.data.list[0][1].gallery.autoRefresh = false;
-    });
-    expect(
-      store.set(settings.replaceProfile, {
-        type: "apply-sync",
-        value: inactiveOnly,
+        type: "apply-imported",
+        value: (current) =>
+          produce(current, (draft) => {
+            draft.list[0][1].gallery.autoRefresh = false;
+          }),
       }),
     ).toEqual({
       status: "applied",
@@ -541,16 +469,13 @@ describe("settings interface", () => {
     });
     expect(persistence.setCalls).toHaveLength(3);
 
-    const activeChanged = produce(
-      store.get(settings.profiles).sync,
-      (draft) => {
-        draft.data.list[1][1].gallery.autoRefresh = false;
-      },
-    );
     expect(
       store.set(settings.replaceProfile, {
-        type: "apply-sync",
-        value: activeChanged,
+        type: "apply-imported",
+        value: (current) =>
+          produce(current, (draft) => {
+            draft.list[1][1].gallery.autoRefresh = false;
+          }),
       }),
     ).toEqual({
       status: "applied",
@@ -565,9 +490,10 @@ describe("settings interface", () => {
   it.each([-1, 0.5, 2])(
     "rejects imported current index %s before reading an active profile",
     (current) => {
-      const settings = createSettings({ storage: new ControllableStorage() });
+      const persistence = new ControllableStorage();
+      const settings = createSettings({ storage: persistence });
       const store = createStore();
-      const before = store.get(settings.profiles);
+      const before = store.get(settings.storage);
 
       expect(
         store.set(settings.replaceProfile, {
@@ -585,103 +511,25 @@ describe("settings interface", () => {
         changed: false,
         profileReplaced: false,
       });
-      expect(store.get(settings.profiles)).toBe(before);
+      expect(store.get(settings.storage)).toBe(before);
+      expect(persistence.setCalls).toEqual([]);
     },
   );
 
-  it("selects synced current by active name, then old index, then zero", () => {
-    const settings = createSettings({ storage: new ControllableStorage() });
-    const store = createStore();
-    store.set(settings.replaceProfile, {
-      type: "apply-imported",
-      value: {
-        current: 1,
-        list: [
-          ["A", getDefaultOptions()],
-          ["B", getDefaultOptions()],
-          ["C", getDefaultOptions()],
-        ],
-      },
-    });
-
-    store.set(settings.replaceProfile, {
-      type: "apply-sync",
-      value: {
-        version: 3,
-        data: {
-          list: [
-            ["B", getDefaultOptions()],
-            ["A", getDefaultOptions()],
-          ],
-        },
-      },
-    });
-    expect(store.get(settings.profiles).profiles.current).toBe(0);
-
-    store.set(settings.replaceProfile, {
-      type: "apply-imported",
-      value: {
-        current: 1,
-        list: [
-          ["P", getDefaultOptions()],
-          ["Q", getDefaultOptions()],
-        ],
-      },
-    });
-    store.set(settings.replaceProfile, {
-      type: "apply-sync",
-      value: {
-        version: 3,
-        data: {
-          list: [
-            ["X", getDefaultOptions()],
-            ["Y", getDefaultOptions()],
-          ],
-        },
-      },
-    });
-    expect(store.get(settings.profiles).profiles.current).toBe(1);
-
-    store.set(settings.replaceProfile, {
-      type: "apply-sync",
-      value: {
-        version: 3,
-        data: { list: [["Only", getDefaultOptions()]] },
-      },
-    });
-    expect(store.get(settings.profiles).profiles.current).toBe(0);
-  });
-
-  it("treats active-name-only sync and imported changes as metadata", () => {
+  it("treats an active-name-only import as metadata", () => {
     const settings = createSettings({ storage: new ControllableStorage() });
     const store = createStore();
 
-    const sync = produce(store.get(settings.profiles).sync, (draft) => {
-      draft.data.list[0][0] = "Synced name";
-    });
-    expect(
-      store.set(settings.replaceProfile, { type: "apply-sync", value: sync }),
-    ).toMatchObject({
-      status: "applied",
-      changed: true,
-      profileReplaced: false,
-      previousActiveName: "Default",
-      nextActiveName: "Synced name",
-    });
-
-    const imported = produce(store.get(settings.profiles).profiles, (draft) => {
-      draft.list[0][0] = "Imported name";
-    });
     expect(
       store.set(settings.replaceProfile, {
         type: "apply-imported",
-        value: imported,
+        value: profileList(0, "Imported name"),
       }),
     ).toMatchObject({
       status: "applied",
       changed: true,
       profileReplaced: false,
-      previousActiveName: "Synced name",
+      previousActiveName: "Default",
       nextActiveName: "Imported name",
     });
   });
@@ -710,11 +558,8 @@ describe("settings interface", () => {
 
     expect(
       store.set(settings.replaceProfile, {
-        type: "apply-sync",
-        value: {
-          version: 3,
-          data: { list: [["Fallback", getDefaultOptions()]] },
-        },
+        type: "apply-imported",
+        value: profileList(0, "Fallback"),
       }),
     ).toMatchObject({
       status: "applied",
@@ -724,7 +569,7 @@ describe("settings interface", () => {
     });
   });
 
-  it("resets gallery state for equal-option imported and synced identity switches", () => {
+  it("resets gallery state for equal-option identity switches", () => {
     const store = createStore();
     store.set(imageCatalog.view.selection, {
       type: "toggle",
@@ -750,29 +595,26 @@ describe("settings interface", () => {
 
     store.set(imageCatalog.view.selection, {
       type: "toggle",
-      key: "i/synced-before.webp",
+      key: "i/second-before.webp",
       checked: true,
       shift: false,
     });
     expect(
       store.set(replaceSettingsProfileAtom, {
-        type: "apply-sync",
-        value: {
-          version: 3,
-          data: { list: [["Fallback", getDefaultOptions()]] },
-        },
+        type: "apply-imported",
+        value: profileList(0, "Fallback"),
       }),
     ).toMatchObject({ profileReplaced: true });
     expect(store.get(catalogImagesAtom)).toEqual([]);
     expect([...store.get(catalogSelectionAtom)]).toEqual([]);
   });
 
-  it("routes genuine activation through one external gallery reset", () => {
+  it("routes a genuine replacement through one external gallery reset", () => {
     const store = createStore();
-    const unsubscribeSettings = store.sub(settings.profiles, () => {});
-    store.set(settings.profiles, {
-      type: "import",
-      value: { name: "Work", data: getDefaultOptions() },
+    const unsubscribeSettings = store.sub(settings.upload, () => {});
+    store.set(replaceSettingsProfileAtom, {
+      type: "apply-imported",
+      value: profileList(0, "Default", "Work"),
     });
     let selectionResets = 0;
     let photoUpdates = 0;
@@ -793,8 +635,8 @@ describe("settings interface", () => {
 
     expect(
       store.set(replaceSettingsProfileAtom, {
-        type: "activate",
-        name: "Work",
+        type: "apply-imported",
+        value: profileList(1, "Default", "Work"),
       }),
     ).toMatchObject({ status: "applied", profileReplaced: true });
     expect(store.get(catalogImagesAtom)).toEqual([]);
@@ -804,49 +646,28 @@ describe("settings interface", () => {
 
     store.set(imageCatalog.view.selection, {
       type: "toggle",
-      key: "i/after-activation.webp",
+      key: "i/after-replacement.webp",
       checked: true,
       shift: false,
     });
-    const renamedSync = produce(store.get(settings.profiles).sync, (draft) => {
-      draft.data.list[draft.data.list.length - 1][0] = "Work metadata";
-    });
-    expect(
-      store.set(replaceSettingsProfileAtom, {
-        type: "apply-sync",
-        value: renamedSync,
-      }),
-    ).toMatchObject({ profileReplaced: false });
-    expect([...store.get(catalogSelectionAtom)]).toEqual([
-      "i/after-activation.webp",
-    ]);
-    expect(selectionResets).toBe(2);
-    expect(photoUpdates).toBe(1);
-
-    const renamedImport = produce(
-      store.get(settings.profiles).profiles,
-      (draft) => {
-        draft.list[draft.current][0] = "Work imported metadata";
-      },
-    );
     expect(
       store.set(replaceSettingsProfileAtom, {
         type: "apply-imported",
-        value: renamedImport,
+        value: profileList(1, "Default", "Work metadata"),
       }),
     ).toMatchObject({ profileReplaced: false });
     expect([...store.get(catalogSelectionAtom)]).toEqual([
-      "i/after-activation.webp",
+      "i/after-replacement.webp",
     ]);
     expect(selectionResets).toBe(2);
     expect(photoUpdates).toBe(1);
 
     expect(
       store.set(replaceSettingsProfileAtom, {
-        type: "activate",
-        name: "Work imported metadata",
+        type: "apply-imported",
+        value: profileList(1, "Default", "Work metadata"),
       }),
-    ).toMatchObject({ status: "already-active", profileReplaced: false });
+    ).toMatchObject({ status: "unchanged", profileReplaced: false });
     expect(selectionResets).toBe(2);
     expect(photoUpdates).toBe(1);
     unsubscribe();
