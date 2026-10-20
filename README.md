@@ -19,6 +19,7 @@
 - **Gallery**: grid view, search by name, filter and sort by date; HEIC and Apple Live Photo support
 - **Share**: copy the image URL or Markdown in one click
 - **Manage**: rename, delete, download
+- **Settings sync**: compression, key templates and other settings live on the server, the same on every browser and device
 - **Interface**: English / 中文, light and dark themes
 
 Key template placeholders, compression and gallery options are described in the [settings reference](docs/settings.en.md).

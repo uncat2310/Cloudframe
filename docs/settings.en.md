@@ -2,7 +2,7 @@
 
 English · [简体中文](settings.md)
 
-Cloudframe keeps its upload and gallery settings in each browser, so a new device starts from the defaults. The bucket, public URL and login password are configured on the server; see the [deployment guide](../selfhost/README.md) (in Chinese).
+Cloudframe keeps its upload and gallery settings on the server, shared by every signed-in browser and saved about a second after each change (when the server has no settings sync configured, each browser keeps its own; see section 2.7 of the deployment guide). Language and theme always stay per browser. The bucket, public URL and login password are configured on the server; see the [deployment guide](../selfhost/README.md) (in Chinese).
 
 <a id="upload-settings"></a>
 

@@ -30,6 +30,7 @@ import {
   type S3Options,
 } from "@/stores/schemas/settings";
 import { onSelfHostSignedOut, selfHostSessionQuery } from "./session";
+import { SettingsSyncRunner } from "./settings-sync-runner";
 
 type SignedInSession = Extract<
   z.infer<typeof selfHostSessionSchema>,
@@ -156,7 +157,13 @@ function ServerProfile({
     });
   }, [ready, desired, session.keyTemplate, replaceProfile]);
 
-  return ready ? children : <GateSkeleton />;
+  if (!ready) return <GateSkeleton />;
+  return (
+    <>
+      {session.settingsSync && <SettingsSyncRunner />}
+      {children}
+    </>
+  );
 }
 
 function LoginCard() {
