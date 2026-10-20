@@ -1,3 +1,4 @@
+import { STORED_IMAGE_CACHE_CONTROL } from "../cache-control";
 import type { ImageStorageFailure, StoredImage } from "../schema";
 import { requiredStorageAccessMethods } from "../schema";
 import type { ServerImageStorage } from "./s3-server";
@@ -10,7 +11,7 @@ type R2ObjectLike = {
   key: string;
   size: number;
   uploaded: Date;
-  httpMetadata?: { contentType?: string };
+  httpMetadata?: { contentType?: string; cacheControl?: string };
 };
 
 type R2ObjectBodyLike = R2ObjectLike & {
@@ -24,7 +25,9 @@ export type R2BucketLike = {
   put(
     key: string,
     value: ReadableStream | ArrayBuffer | Blob | string,
-    options?: { httpMetadata?: { contentType?: string } },
+    options?: {
+      httpMetadata?: { contentType?: string; cacheControl?: string };
+    },
   ): Promise<R2ObjectLike | null>;
   delete(keys: string | string[]): Promise<void>;
   list(options?: {
@@ -98,6 +101,7 @@ export function createR2BindingImageStorage(
               contentType ||
               (typeof body === "string" ? "text/plain" : body.type) ||
               undefined,
+            cacheControl: STORED_IMAGE_CACHE_CONTROL,
           },
         });
         return { ok: true, value: { key } };
@@ -129,7 +133,12 @@ export function createR2BindingImageStorage(
           return { ok: false, error: { reason: "not-found", key: oldKey } };
         }
         await bucket.put(newKey, source.body, {
-          httpMetadata: source.httpMetadata,
+          httpMetadata: {
+            ...source.httpMetadata,
+            // Images uploaded before Cache-Control was set get it now.
+            cacheControl:
+              source.httpMetadata?.cacheControl ?? STORED_IMAGE_CACHE_CONTROL,
+          },
         });
       } catch (error) {
         return { ok: false, error: toFailure(error) };

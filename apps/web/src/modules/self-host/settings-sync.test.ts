@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SyncedSettings } from "@/lib/self-host/settings-store";
+import type {
+  StoredSettings,
+  SyncedSettings,
+} from "@/lib/self-host/settings-store";
 import { createSettingsSync } from "./settings-sync";
 
 const base: SyncedSettings = {
@@ -18,15 +21,27 @@ const noRefresh: SyncedSettings = { ...base, gallery: { autoRefresh: false } };
 
 function setup(initialLocal: SyncedSettings, remote: SyncedSettings | null) {
   let local = initialLocal;
-  let server = remote;
+  let clock = 100;
+  let server: StoredSettings | null =
+    remote === null ? null : { value: remote, updatedAt: clock };
+  /** What the next fetch returns instead of the server (a stale KV read). */
+  let staleRead: StoredSettings | null | undefined;
   const deps = {
     readLocal: () => local,
     writeLocal: vi.fn((value: SyncedSettings) => {
       local = value;
     }),
-    fetchRemote: vi.fn(async () => server),
+    fetchRemote: vi.fn(async () => {
+      if (staleRead !== undefined) {
+        const read = staleRead;
+        staleRead = undefined;
+        return read;
+      }
+      return server;
+    }),
     pushRemote: vi.fn(async (value: SyncedSettings) => {
-      server = value;
+      server = { value, updatedAt: ++clock };
+      return clock;
     }),
   };
   const sync = createSettingsSync({ ...deps, debounceMs: 1000, retryMs: 5000 });
@@ -41,10 +56,15 @@ function setup(initialLocal: SyncedSettings, remote: SyncedSettings | null) {
       return local;
     },
     get server() {
-      return server;
+      return server?.value ?? null;
     },
+    /** A save made on another device. */
     setServer(value: SyncedSettings) {
-      server = value;
+      server = { value, updatedAt: ++clock };
+    },
+    /** Serve this copy to the next fetch, as a lagging KV replica would. */
+    serveStale(value: StoredSettings | null) {
+      staleRead = value;
     },
   };
 }
@@ -117,6 +137,19 @@ describe("createSettingsSync", () => {
     expect(t.local).toEqual(noRefresh);
     await vi.advanceTimersByTimeAsync(1000);
     expect(t.server).toEqual(noRefresh);
+  });
+
+  it("ignores a stale copy that is older than its own save", async () => {
+    const t = setup(base, base);
+    await t.sync.start();
+    t.edit(withWebp);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(t.server).toEqual(withWebp);
+    // A replica still holding the pre-save copy answers the next fetch.
+    t.serveStale({ value: base, updatedAt: 100 });
+    await t.sync.refresh();
+    expect(t.local).toEqual(withWebp);
+    expect(t.deps.writeLocal).not.toHaveBeenCalled();
   });
 
   it("retries a failed save", async () => {

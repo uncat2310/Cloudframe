@@ -1,10 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
+import { STORED_IMAGE_CACHE_CONTROL } from "../cache-control";
 import { createR2BindingImageStorage, type R2BucketLike } from "./r2-binding";
 
 function createFakeBucket(pageSize = 2) {
   const objects = new Map<
     string,
-    { body: Blob; uploaded: Date; contentType?: string }
+    {
+      body: Blob;
+      uploaded: Date;
+      contentType?: string;
+      cacheControl?: string;
+    }
   >();
   const describe = (key: string) => {
     const object = objects.get(key)!;
@@ -32,13 +38,16 @@ function createFakeBucket(pageSize = 2) {
       async (
         key: string,
         value: ReadableStream | ArrayBuffer | Blob | string,
-        options?: { httpMetadata?: { contentType?: string } },
+        options?: {
+          httpMetadata?: { contentType?: string; cacheControl?: string };
+        },
       ) => {
         const body = await new Response(value).blob();
         objects.set(key, {
           body,
           uploaded: new Date("2026-10-19T00:00:00.000Z"),
           contentType: options?.httpMetadata?.contentType,
+          cacheControl: options?.httpMetadata?.cacheControl,
         });
         return describe(key);
       },
@@ -108,6 +117,29 @@ describe("R2 binding image storage", () => {
     expect(await storage.probeStoredImage("missing.png")).toEqual({
       ok: false,
       error: { reason: "not-found", key: "missing.png" },
+    });
+  });
+
+  it("stores a Cache-Control with uploads and adds it to renamed old ones", async () => {
+    const { bucket, objects } = createFakeBucket();
+    const storage = createR2BindingImageStorage(bucket);
+
+    await storage.putStoredImage({
+      key: "i/a.png",
+      body: new Blob(["png"], { type: "image/png" }),
+    });
+    expect(objects.get("i/a.png")!.cacheControl).toBe(
+      STORED_IMAGE_CACHE_CONTROL,
+    );
+
+    // Uploaded before Cache-Control was set: a rename adds it.
+    await bucket.put("old.png", "old", {
+      httpMetadata: { contentType: "image/png" },
+    });
+    await storage.renameStoredImage({ oldKey: "old.png", newKey: "new.png" });
+    expect(objects.get("new.png")).toMatchObject({
+      contentType: "image/png",
+      cacheControl: STORED_IMAGE_CACHE_CONTROL,
     });
   });
 
