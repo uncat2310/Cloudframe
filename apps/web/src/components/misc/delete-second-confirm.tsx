@@ -21,11 +21,18 @@ export function DeleteSecondConfirm({
   triggerRender,
   triggerTooltip,
   itemNames,
+  title,
+  description,
+  confirmLabel,
 }: {
   deleteFn: () => void;
   itemNames: string[];
   triggerRender: ComponentPropsWithRef<typeof DialogTrigger>["render"];
   triggerTooltip?: ReactNode;
+  /** Override the default "move to trash" wording. */
+  title?: string;
+  description?: string;
+  confirmLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const t = useTranslations("gallery.control.deleteConfirm");
@@ -41,8 +48,10 @@ export function DeleteSecondConfirm({
       )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogTitle>{title ?? t("title")}</DialogTitle>
+          <DialogDescription>
+            {description ?? t("description")}
+          </DialogDescription>
         </DialogHeader>
         <ul className="list-disc list-inside max-h-[300px] overflow-y-auto">
           {itemNames.map((name) => (
@@ -59,7 +68,7 @@ export function DeleteSecondConfirm({
               setOpen(false);
             }}
           >
-            {t("delete")}
+            {confirmLabel ?? t("delete")}
           </Button>
         </DialogFooter>
       </DialogContent>
