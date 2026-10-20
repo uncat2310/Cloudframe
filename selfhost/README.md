@@ -101,7 +101,20 @@ Worker → 域 → 添加域名 → 选择你托管在 Cloudflare 上的域名 �
 
 免费版每个域名只能有 1 条速率限制规则。要让这条规则不被绕过，`workers_dev` 需要保持 `false`，不然别人可以改走 `workers.dev` 地址。
 
-### 2.6 另一种方式：在电脑上用命令行部署
+### 2.6 画廊缩略图（推荐，需要存储桶绑定自定义域名）
+
+画廊默认按原图加载，图片多、文件大时会很慢。开启 Cloudflare 的图片变换后，画廊里每张图只加载一张长边不超过 800 像素的缩略图（通常几十 KB），点开大图、复制链接和下载仍然是原图。
+
+1. Cloudflare 控制台 → Images & Stream → 转换 → 找到存储桶公开地址所在的域名（例如 `example.com`）→ 右侧「…」→ 启用。
+2. `wrangler.jsonc` 的 `vars` 里设置 `"CLOUDFRAME_THUMBNAILS": "cloudflare"`（本仓库已开启），推送后自动部署。
+
+说明：
+
+- 免费版每月 5,000 张「不同的」缩略图。每张图片只生成一种尺寸，已生成的会被缓存，个人图床一般用不完；超出后新图片的缩略图会失败，画廊会自动改为显示原图，不会产生费用。
+- HEIC、SVG 和视频不生成缩略图，按原样显示。
+- 存储桶只用 `r2.dev` 地址时无法开启（图片变换需要自己的域名），把 `CLOUDFRAME_THUMBNAILS` 设为 `off` 或不设置即可。
+
+### 2.7 另一种方式：在电脑上用命令行部署
 
 需要 Node.js 22 和 pnpm（`corepack enable` 即可）：
 
@@ -117,19 +130,20 @@ npx wrangler@4 secret put CLOUDFRAME_SESSION_SECRET -c .output/server/wrangler.j
 
 使用自定义域名时，部署后同样按 2.4 在后台绑定域名。
 
-### 2.7 Workers 上的可选变量
+### 2.8 Workers 上的可选变量
 
 在 Worker 设置 → 运行时变量和密钥里添加（`wrangler.jsonc` 开启了 `keep_vars`，重新部署不会清掉它们）：
 
-| 变量                      | 说明                                        |
-| ------------------------- | ------------------------------------------- |
-| `R2_INCLUDE_PATH`         | 面板只能查看和操作该前缀下的文件，例如 `i/` |
-| `CLOUDFRAME_KEY_TEMPLATE` | 新浏览器的默认上传路径模板                  |
-| `R2_BUCKET`               | 仅用于在设置页显示存储桶名称                |
+| 变量                      | 说明                                              |
+| ------------------------- | ------------------------------------------------- |
+| `R2_INCLUDE_PATH`         | 面板只能查看和操作该前缀下的文件，例如 `i/`       |
+| `CLOUDFRAME_KEY_TEMPLATE` | 新浏览器的默认上传路径模板                        |
+| `R2_BUCKET`               | 仅用于在设置页显示存储桶名称                      |
+| `CLOUDFRAME_THUMBNAILS`   | `cloudflare` 开启画廊缩略图（见 2.6），默认 `off` |
 
 `wrangler.jsonc` 里的 `LOGIN_RATE_LIMITER` 是 Cloudflare 的限流绑定，用来在 Worker 实例之间共享登录次数（近似计数），不需要额外设置。分支预览地址（`preview_urls`）默认关闭，因为预览版本会使用和正式版相同的存储桶与密码。
 
-### 2.8 免费额度
+### 2.9 免费额度
 
 个人图床一般用不完：Workers 免费版每天 10 万次请求，每次请求 10 ms CPU 时间（等待 R2 的时间不计）；R2 每月免费 10 GB 存储、100 万次写类操作、1000 万次读类操作，流量免费。
 
@@ -171,20 +185,21 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs
 
 ## Docker / Node 的环境变量
 
-| 变量                          | 必填 | 说明                                                                      |
-| ----------------------------- | ---- | ------------------------------------------------------------------------- |
-| `CLOUDFRAME_PASSWORD`         | 是   | 面板登录密码                                                              |
-| `R2_ACCOUNT_ID`               | 是\* | Cloudflare 账户 ID，用来拼出 S3 Endpoint                                  |
-| `R2_ACCESS_KEY_ID`            | 是   | API 令牌的访问密钥 ID                                                     |
-| `R2_SECRET_ACCESS_KEY`        | 是   | API 令牌的机密访问密钥                                                    |
-| `R2_BUCKET`                   | 是   | 存储桶名称                                                                |
-| `R2_PUBLIC_URL`               | 是   | 公开访问地址（自定义域名或 r2.dev 地址）                                  |
-| `R2_INCLUDE_PATH`             | 否   | 面板只能查看和操作该前缀下的文件，例如 `i/`                               |
-| `CLOUDFRAME_KEY_TEMPLATE`     | 否   | 新浏览器的默认上传路径模板                                                |
-| `R2_ENDPOINT`                 | 否   | 覆盖 Endpoint（\*设置后可不填 `R2_ACCOUNT_ID`），如欧盟区域的 `.eu.` 地址 |
-| `CLOUDFRAME_SESSION_SECRET`   | 否   | 登录会话签名密钥，默认使用 `R2_SECRET_ACCESS_KEY`                         |
-| `CLOUDFRAME_CLIENT_IP_HEADER` | 否   | 反向代理传递客户端 IP 的请求头，例如 `x-forwarded-for`，见下方安全建议    |
-| `PORT`                        | 否   | 监听端口，默认 3000                                                       |
+| 变量                          | 必填 | 说明                                                                                |
+| ----------------------------- | ---- | ----------------------------------------------------------------------------------- |
+| `CLOUDFRAME_PASSWORD`         | 是   | 面板登录密码                                                                        |
+| `R2_ACCOUNT_ID`               | 是\* | Cloudflare 账户 ID，用来拼出 S3 Endpoint                                            |
+| `R2_ACCESS_KEY_ID`            | 是   | API 令牌的访问密钥 ID                                                               |
+| `R2_SECRET_ACCESS_KEY`        | 是   | API 令牌的机密访问密钥                                                              |
+| `R2_BUCKET`                   | 是   | 存储桶名称                                                                          |
+| `R2_PUBLIC_URL`               | 是   | 公开访问地址（自定义域名或 r2.dev 地址）                                            |
+| `R2_INCLUDE_PATH`             | 否   | 面板只能查看和操作该前缀下的文件，例如 `i/`                                         |
+| `CLOUDFRAME_KEY_TEMPLATE`     | 否   | 新浏览器的默认上传路径模板                                                          |
+| `R2_ENDPOINT`                 | 否   | 覆盖 Endpoint（\*设置后可不填 `R2_ACCOUNT_ID`），如欧盟区域的 `.eu.` 地址           |
+| `CLOUDFRAME_SESSION_SECRET`   | 否   | 登录会话签名密钥，默认使用 `R2_SECRET_ACCESS_KEY`                                   |
+| `CLOUDFRAME_THUMBNAILS`       | 否   | `cloudflare` 开启画廊缩略图（公开地址的域名需在 Cloudflare 上启用图片变换，见 2.6） |
+| `CLOUDFRAME_CLIENT_IP_HEADER` | 否   | 反向代理传递客户端 IP 的请求头，例如 `x-forwarded-for`，见下方安全建议              |
+| `PORT`                        | 否   | 监听端口，默认 3000                                                                 |
 
 配置不完整时，面板会直接列出缺少或填错的变量，服务器日志里也会打印。
 

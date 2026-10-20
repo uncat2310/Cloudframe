@@ -25,7 +25,7 @@ const Header: React.FC = () => {
           className="flex-1 justify-start flex items-center gap-2 select-none"
           to="/$locale"
           params={{ locale }}
-          aria-label="Logo"
+          aria-label={t("home")}
         >
           <img
             src="/favicon.svg" // Assuming favicon is in public root
@@ -73,7 +73,7 @@ const Header: React.FC = () => {
             target="_blank"
             href="https://github.com/uncat2310/Cloudframe"
             className={buttonVariants({ size: "icon", variant: "ghost" })}
-            aria-label="GitHub Repository"
+            aria-label={t("github")}
           >
             <McGithub />
           </a>

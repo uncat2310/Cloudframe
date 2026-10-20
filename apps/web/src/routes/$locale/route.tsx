@@ -34,5 +34,6 @@ function RouteComponent() {
 
 function NotFoundComponent() {
   // TODO: Add a nice not found component
-  return <div>Not Found</div>;
+  // Rendered outside the locale's IntlProvider, so both languages are shown.
+  return <div>页面不存在 · Not Found</div>;
 }

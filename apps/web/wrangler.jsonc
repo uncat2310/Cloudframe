@@ -41,7 +41,10 @@
     // TODO: the bucket's public URL (custom domain or r2.dev address)
     "R2_PUBLIC_URL": "https://i.example.com",
     // Shown on the storage settings page; keep in sync with bucket_name.
-    "R2_BUCKET": "img"
+    "R2_BUCKET": "img",
+    // Gallery thumbnails through Cloudflare Image Transformations, which must
+    // be enabled for the zone of R2_PUBLIC_URL. Use "off" to show originals.
+    "CLOUDFRAME_THUMBNAILS": "cloudflare"
   }
   // The login password is a secret, never put it here:
   //   npx wrangler@4 secret put CLOUDFRAME_PASSWORD -c .output/server/wrangler.json

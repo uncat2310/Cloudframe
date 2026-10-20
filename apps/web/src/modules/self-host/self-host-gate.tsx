@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { client } from "@/lib/orpc/client";
 import type { selfHostSessionSchema } from "@/lib/orpc/router/self-host-router";
 import { setSelfHostPublicBase } from "@/lib/self-host/fetchable-url";
+import { setSelfHostThumbnails } from "@/lib/self-host/thumbnail";
 import { replaceSettingsProfileAtom } from "@/modules/settings/replace-profile";
 import { settings } from "@/stores/atoms/settings";
 import {
@@ -119,6 +120,7 @@ function ServerProfile({
   const replaceProfile = useSetAtom(replaceSettingsProfileAtom);
   const ready = deepEqual(current, desired);
   setSelfHostPublicBase(desired.pubUrl);
+  setSelfHostThumbnails(session.storage.thumbnails);
 
   useEffect(() => {
     if (ready) return;

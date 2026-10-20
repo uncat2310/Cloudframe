@@ -44,3 +44,7 @@ next-env.d.ts
 
 # Cloudflare Wrangler
 .wrangler
+
+# Vitest browser-mode failure artifacts
+.vitest-attachments
+__screenshots__
