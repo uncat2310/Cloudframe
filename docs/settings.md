@@ -76,4 +76,6 @@ i/{{year}}/{{month}}/{{day}}/{{ulid-dayslice}}.{{ext}}
 - **批量操作**：全选当前页（快捷键 Ctrl+A）、复制所选链接、批量删除。
 - **单张图片**：打开、查看信息、复制链接或 Markdown、下载、重命名、删除。
 
+服务器设置了 `CLOUDFRAME_THUMBNAILS=cloudflare` 时，画廊里显示的是缩略图（长边不超过 800 像素），点开大图、复制链接和下载都是原图；缩略图加载失败时会自动改为显示原图。
+
 只想显示某个前缀下的文件时，在服务器上设置 `R2_INCLUDE_PATH`（例如 `i/`），见[部署指南](../selfhost/README.md)。

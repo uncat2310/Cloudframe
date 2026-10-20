@@ -194,6 +194,7 @@ function FilePreviewEdit({
 }
 
 function FilePreviewThumbnail({ file }: { file: File }) {
+  const t = useTranslations("upload.fileList");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -223,7 +224,9 @@ function FilePreviewThumbnail({ file }: { file: File }) {
         />
       ) : (
         <div className="flex items-center justify-center h-full w-full">
-          <span className="text-xs text-muted-foreground">File</span>
+          <span className="text-xs text-muted-foreground">
+            {t("fileLabel")}
+          </span>
         </div>
       )}
     </div>
@@ -332,7 +335,7 @@ function CopyButton({
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" aria-label="Open menu" size="icon">
+          <Button variant="outline" aria-label={t("openMenu")} size="icon">
             <span className="sr-only">{t("copy")}</span>
             <McCopy />
           </Button>

@@ -38,3 +38,36 @@ describe("PhotoImg profile replacement", () => {
     expect(setLoadingState).not.toHaveBeenCalled();
   });
 });
+
+describe("PhotoImg thumbnails", () => {
+  it("shows the thumbnail and falls back to the original when it fails", () => {
+    const store = createStore();
+    store.set(clearNaturalSizeCacheAtom);
+    const setLoadingState = vi.fn();
+    const mounted = render(
+      <Provider store={store}>
+        <PhotoImg
+          s3Key="i/a.jpg"
+          url="https://img.example.com/i/a.jpg"
+          thumbnailUrl="https://img.example.com/cdn-cgi/image/width=800/i/a.jpg"
+          setLoadingState={setLoadingState}
+        />
+      </Provider>,
+    );
+    const image = mounted.getByAltText("i/a.jpg") as HTMLImageElement;
+    expect(image.getAttribute("src")).toBe(
+      "https://img.example.com/cdn-cgi/image/width=800/i/a.jpg",
+    );
+
+    fireEvent.error(image);
+
+    const fallback = mounted.getByAltText("i/a.jpg") as HTMLImageElement;
+    expect(fallback.getAttribute("src")).toBe(
+      "https://img.example.com/i/a.jpg",
+    );
+    expect(setLoadingState).not.toHaveBeenCalledWith("error");
+
+    fireEvent.error(fallback);
+    expect(setLoadingState).toHaveBeenCalledWith("error");
+  });
+});

@@ -2,7 +2,9 @@
   "navbar": {
     "upload": "Upload",
     "gallery": "Gallery",
-    "settings": "Settings"
+    "settings": "Settings",
+    "home": "Cloudframe home",
+    "github": "GitHub repository"
   },
   "settings": {
     "title": "Settings",
@@ -22,8 +24,11 @@
         "applyAsDefault": "Apply as Default",
         "addNew": "add new preset",
         "edit": "Edit",
-        "delete": "Delete"
-      }
+        "delete": "Delete",
+        "systemActions": "System preset actions",
+        "save": "Save"
+      },
+      "resetToDefault": "Reset to default"
     },
     "imageCompress": {
       "targetFormat": "Target Format",
@@ -38,7 +43,8 @@
       "title": "Gallery",
       "autoRefresh": "Auto Refresh",
       "autoRefreshDesc": "Refresh the gallery every time it loads. If enabled, there will be more list requests, which may slightly increase R2 costs."
-    }
+    },
+    "viewDocs": "View documentation"
   },
   "gallery": {
     "control": {
@@ -60,7 +66,12 @@
       }
     },
     "pagination": {
-      "itemsPerPage": "Per page"
+      "itemsPerPage": "Per page",
+      "previous": "Previous",
+      "next": "Next",
+      "previousLabel": "Go to previous page",
+      "nextLabel": "Go to next page",
+      "morePages": "More pages"
     },
     "store": {
       "storageSettingsNotFound": "Storage settings not found",
@@ -114,6 +125,14 @@
     },
     "item": {
       "livePhoto": "Live",
+      "loadError": {
+        "title": "Couldn't load this image",
+        "key": "Key: {key}",
+        "type": "Type: {type}",
+        "checking": "checking…",
+        "unknownType": "unknown",
+        "recheck": "Check again"
+      },
       "options": {
         "open": "Open",
         "selectPhoto": "Select {key}",
@@ -154,7 +173,8 @@
           "noBody": "Failed to download photo"
         },
         "copyMarkdown": "Copy M↓"
-      }
+      },
+      "notFound": "Photo not found"
     }
   },
   "theme": {
@@ -178,7 +198,9 @@
       "recompress": "Recompress",
       "compressing": "Compressing...",
       "keyWillBe": "Key will be:",
-      "upload": "Upload"
+      "upload": "Upload",
+      "fileLabel": "File",
+      "openMenu": "Open menu"
     },
     "alerts": {
       "storageNotConfigured": "Storage is not configured"

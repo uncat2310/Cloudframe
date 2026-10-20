@@ -163,7 +163,7 @@ function PrefixSelector({
             <Combobox.Popup
               data-slot="combobox-content"
               className="origin-(--transform-origin) max-w-(--available-width) group/combobox-content max-h-[24rem] rounded-md ring-foreground/10 ring-1 *:data-[slot=input-group]:shadow-none bg-popover text-popover-foreground shadow-md shadow-gray-200 outline-1 outline-gray-200 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300"
-              aria-label="Select country"
+              aria-label={t("selectPrefix")}
             >
               <div className="w-full h-2"></div>
               <InputGroup className="w-auto mx-2">
