@@ -39,8 +39,18 @@ describe("getSettingsStore", () => {
     const store = getSettingsStore()!;
     expect(store.kind).toBe("workers-kv");
     expect(await store.read()).toBeNull();
-    await store.write(value);
-    expect(await store.read()).toEqual(value);
+    const before = Date.now();
+    const written = await store.write(value);
+    expect(written.value).toEqual(value);
+    expect(written.updatedAt).toBeGreaterThanOrEqual(before);
+    expect(await store.read()).toEqual(written);
+  });
+
+  it("reads settings saved before timestamps existed as the oldest copy", async () => {
+    const kv = fakeKv();
+    env.__env__ = { SETTINGS: kv };
+    kv.data.set("settings", JSON.stringify(value));
+    expect(await getSettingsStore()!.read()).toEqual({ value, updatedAt: 0 });
   });
 
   it("treats stored data that isn't valid settings as missing", async () => {

@@ -36,11 +36,17 @@ export function SettingsSyncRunner() {
         store.set(settings.upload, value.upload);
         store.set(settings.gallery, value.gallery);
       },
-      fetchRemote: async () =>
-        (await signedOutAware(() => client.selfHost.settings.get())).value,
-      pushRemote: async (value) => {
-        await signedOutAware(() => client.selfHost.settings.put({ value }));
+      fetchRemote: async () => {
+        const remote = await signedOutAware(() =>
+          client.selfHost.settings.get(),
+        );
+        return remote.value === null
+          ? null
+          : { value: remote.value, updatedAt: remote.updatedAt };
       },
+      pushRemote: async (value) =>
+        (await signedOutAware(() => client.selfHost.settings.put({ value })))
+          .updatedAt,
     });
 
     const unsubscribe = [
