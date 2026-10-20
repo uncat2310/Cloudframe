@@ -61,6 +61,13 @@ pnpm --filter s3-image-port-web test    # 测试（在 Chromium 里运行）
 pnpm --filter s3-image-port-web lint
 ```
 
+## 贡献者
+
+- **[uncat2310](https://github.com/uncat2310)（薛定谔的猫）**：项目作者和维护者，负责 Cloudflare R2 自部署版本的改造、部署和日常使用。
+- **Claude**（[Anthropic](https://www.anthropic.com) 的 AI 助手，通过 [Claude Code](https://claude.com/claude-code) 参与）：安全审查与加固、依赖漏洞升级、改名为 Cloudframe、图标和文档。相关提交都带有 `Co-Authored-By: Claude` 署名。
+
+原项目 S3 Image Port 的作者和贡献者见下方致谢。
+
 ## 致谢
 
 Cloudframe 基于 [yy4382](https://github.com/yy4382) 的 **[S3 Image Port](https://github.com/yy4382/s3-image-port)** 改造（同步至 v1.8.5 之后的上游代码）。上传、画廊、压缩、HEIC 和 Live Photo 等核心功能都来自原项目，非常感谢原作者的工作。

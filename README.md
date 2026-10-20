@@ -59,6 +59,13 @@ pnpm --filter s3-image-port-web test    # tests (run in Chromium)
 pnpm --filter s3-image-port-web lint
 ```
 
+## Contributors
+
+- **[uncat2310](https://github.com/uncat2310)**: author and maintainer; adapted the project into a self-hosted Cloudflare R2 panel, deploys and uses it.
+- **Claude** ([Anthropic](https://www.anthropic.com)'s AI assistant, via [Claude Code](https://claude.com/claude-code)): security review and hardening, dependency upgrades, the Cloudframe rename, icon and docs. Its commits carry a `Co-Authored-By: Claude` trailer.
+
+The author and contributors of the original S3 Image Port are credited below.
+
 ## Acknowledgements
 
 Cloudframe is built on **[S3 Image Port](https://github.com/yy4382/s3-image-port)** by [yy4382](https://github.com/yy4382) (synced past upstream v1.8.5). Uploading, the gallery, compression, HEIC and Live Photo support all come from the original project. Thank you!
