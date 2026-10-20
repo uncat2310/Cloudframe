@@ -46,6 +46,8 @@ Worker 通过 **R2 绑定** 直接读写存储桶，不需要创建 API 令牌�
 
 `binding` 必须保持为 `BUCKET`。`name`（Worker 名称，默认 `s3-image-port`）可以按需修改。
 
+本仓库的 `wrangler.jsonc` 关闭了 `workers.dev` 地址（`"workers_dev": false`），面板只通过自定义域名访问，这样域名上的登录限速规则（见「安全建议」）不会被绕过。如果你没有自己的域名，把它改回 `true`，否则部署后面板没有访问地址。
+
 ### 2.2 方式 A：在 Cloudflare 后台连接 GitHub（推荐，不用装任何工具）
 
 1. Cloudflare 控制台 → Workers 和 Pages → 创建 → 导入 Git 仓库，选择你的仓库。
@@ -57,7 +59,7 @@ Worker 通过 **R2 绑定** 直接读写存储桶，不需要创建 API 令牌�
 3. 首次部署完成后，进入该 Worker → 设置 → 变量和机密 → 添加，类型都选 **机密（Secret）**：
    - `S3IP_PASSWORD`：你的登录密码；
    - `S3IP_SESSION_SECRET`：一串 32 位以上的随机字符（例如 `openssl rand -base64 32` 的输出），用来签名登录 cookie。不设置时 cookie 只由密码派生的密钥签名，cookie 一旦泄露就可能被离线暴力破解出密码。
-4. 打开 `https://s3-image-port.<你的子域>.workers.dev`，输入密码即可。也可以在 Worker 设置里绑定自己的域名。
+4. 在 Worker → 域 → 添加域名，绑定自己的域名（例如 `pic.example.com`），打开它输入密码即可。没有自己的域名时，按上面的说明开启 `workers_dev`，用 `https://s3-image-port.<你的子域>.workers.dev` 访问。
 
 之后每次推送到仓库都会自动重新部署。（后台菜单名称可能随 Cloudflare 更新略有不同。）
 
@@ -152,6 +154,9 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs
 - 登录限流：每个 IP 每分钟最多 10 次，所有来源合计每分钟最多 60 次。
   - Workers 上用 Cloudflare 提供、无法伪造的 `CF-Connecting-IP` 识别 IP，计数在所有实例间共享。
   - Docker / Node 默认不信任任何转发头（客户端可以随意伪造），所有请求共用一个计数。放在反向代理后面时，把 `S3IP_CLIENT_IP_HEADER` 设为代理写入的请求头（Caddy / Nginx 一般是 `x-forwarded-for`，Cloudflare Tunnel 是 `cf-connecting-ip`），才会按 IP 分别计数。**不要在没有代理时设置它。**
+- 用自定义域名时，可以再在该域名的 Cloudflare 安全规则里加一条免费的「速率限制规则」，比应用内的限流更精确，例如：
+  - 表达式：`(http.host eq "pic.example.com" and http.request.uri.path eq "/api/rpc/selfHost/login")`
+  - 按 IP 计数，10 秒内超过 4 次就阻止 10 秒。
 - 只能上传图片和视频（Live Photo 的 `.mov`）。
 - 登录状态保存 30 天，「退出登录」只清除当前浏览器的 cookie。想让所有设备失效，修改 `S3IP_SESSION_SECRET` 或密码即可。
 - Workers 自带 HTTPS。Docker / Node **暴露到公网时请加 HTTPS**，否则密码会明文传输。例如用 Caddy 反向代理（自动申请证书）：
