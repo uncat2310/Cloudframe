@@ -91,7 +91,7 @@ export async function hasValidSession(
 ) {
   const value = readCookie(headers?.get("cookie"), COOKIE_NAME);
   const [expiresAt, signature] = value?.split(".") ?? [];
-  if (!expiresAt || !signature) return false;
+  if (!expiresAt || !signature || !/^\d+$/.test(expiresAt)) return false;
   if (Number(expiresAt) * 1000 < Date.now()) return false;
   const expected = await sign(config, expiresAt);
   return equalBytes(encoder.encode(expected), encoder.encode(signature));

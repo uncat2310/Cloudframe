@@ -11,10 +11,17 @@ import {
   storedImageResultSchema,
 } from "@/modules/image-storage/schema";
 import {
+  isCloudflareWorker,
   loadSelfHostConfig,
   publicStorageSchema,
   toPublicStorage,
+  workerBinding,
 } from "@/lib/self-host/config";
+import {
+  isImageOrVideoType,
+  isInsideIncludePath,
+  resolveUploadContentType,
+} from "@/lib/self-host/policy";
 import {
   clearSessionCookie,
   createSessionCookie,
@@ -23,7 +30,12 @@ import {
   passwordMatches,
 } from "@/lib/self-host/session";
 import { getSelfHostStorage } from "@/lib/self-host/storage";
-import { createMemoryLimiter, getClientIp } from "../rate-limit";
+import {
+  createMemoryLimiter,
+  createWorkersLimiter,
+  getClientIp,
+  isWorkersRateLimitBinding,
+} from "../rate-limit";
 import { baseOs } from "./base-router";
 
 const selfHostOs = baseOs.errors({
@@ -45,20 +57,67 @@ const requireSession = selfHostOs.middleware(
     if (!(await hasValidSession(result.config, context.reqHeaders))) {
       throw errors.UNAUTHORIZED();
     }
-    return next({ context: { storage: getSelfHostStorage(result.config) } });
+    return next({
+      context: {
+        storage: getSelfHostStorage(result.config),
+        includePath: result.config.s3.includePath,
+      },
+    });
   },
 );
 
 const isTestEnv = process.env.NODE_ENV === "test";
 
-const loginRateLimitByIp = createRatelimitMiddleware({
-  limiter: createMemoryLimiter(
-    isTestEnv
-      ? { windowMs: 1_000, maxRequests: 10_000 }
-      : { windowMs: 60_000, maxRequests: 10 },
-  ),
-  key: (options) => `ip:${getClientIp(options.context)}`,
+const LOGIN_WINDOW_MS = 60_000;
+/** Name of the Workers Rate Limiting binding in `wrangler.jsonc`. */
+const LOGIN_RATE_LIMITER_BINDING = "LOGIN_RATE_LIMITER";
+const loginLimits = isTestEnv
+  ? { windowMs: 1_000, perIp: 10_000, total: 10_000 }
+  : { windowMs: LOGIN_WINDOW_MS, perIp: 10, total: 60 };
+
+const perIpMemoryLimiter = createMemoryLimiter({
+  windowMs: loginLimits.windowMs,
+  maxRequests: loginLimits.perIp,
 });
+
+/**
+ * Attempts per client IP. On Workers the counter lives in the Rate Limiting
+ * binding, shared across isolates; a memory counter alone resets whenever a
+ * new connection lands on another isolate.
+ */
+const loginRateLimitByIp = createRatelimitMiddleware({
+  limiter: () => {
+    const binding = workerBinding(LOGIN_RATE_LIMITER_BINDING);
+    return isWorkersRateLimitBinding(binding)
+      ? createWorkersLimiter(binding, {
+          windowMs: loginLimits.windowMs,
+          maxRequests: loginLimits.perIp,
+        })
+      : perIpMemoryLimiter;
+  },
+  key: ({ context }) =>
+    `ip:${getClientIp(context.reqHeaders, {
+      onWorker: isCloudflareWorker(),
+      trustedHeader: process.env.S3IP_CLIENT_IP_HEADER,
+    })}`,
+});
+
+/** Attempts from all clients together, against guessing from many IPs. */
+const loginRateLimitTotal = createRatelimitMiddleware({
+  limiter: createMemoryLimiter({
+    windowMs: loginLimits.windowMs,
+    maxRequests: loginLimits.total,
+  }),
+  key: "all",
+});
+
+function rejected(message: string) {
+  return { ok: false as const, error: { reason: "unknown" as const, message } };
+}
+
+function outsideIncludePath(key: string) {
+  return rejected(`"${key}" is outside R2_INCLUDE_PATH`);
+}
 
 export const selfHostSessionSchema = z.discriminatedUnion("status", [
   z.object({
@@ -101,8 +160,9 @@ const login = selfHostOs
       }),
     },
   })
-  .input(z.object({ password: z.string().nonempty() }))
+  .input(z.object({ password: z.string().nonempty().max(1024) }))
   .use(loginRateLimitByIp)
+  .use(loginRateLimitTotal)
   .handler(async ({ input, context, errors }) => {
     const result = loadSelfHostConfig();
     if (!result.ok) {
@@ -149,13 +209,31 @@ export const selfHostRouter = {
         }),
       )
       .output(storedImageResultSchema)
-      .handler(({ input, context }) => context.storage.putStoredImage(input)),
+      .handler(({ input, context }) => {
+        if (!isInsideIncludePath(context.includePath, input.key)) {
+          return outsideIncludePath(input.key);
+        }
+        const contentType = resolveUploadContentType(
+          input.key,
+          input.contentType || input.body.type,
+        );
+        if (!isImageOrVideoType(contentType)) {
+          return rejected(
+            `Only images and videos can be uploaded (got ${contentType ?? "an unknown type"})`,
+          );
+        }
+        return context.storage.putStoredImage({ ...input, contentType });
+      }),
     delete: storageOs
       .input(z.object({ keys: z.array(storageKeySchema) }))
       .output(storedImageDeleteResultSchema)
-      .handler(({ input, context }) =>
-        context.storage.deleteStoredImages(input.keys),
-      ),
+      .handler(({ input, context }) => {
+        const outside = input.keys.find(
+          (key) => !isInsideIncludePath(context.includePath, key),
+        );
+        if (outside !== undefined) return outsideIncludePath(outside);
+        return context.storage.deleteStoredImages(input.keys);
+      }),
     rename: storageOs
       .input(
         z.object({
@@ -165,20 +243,29 @@ export const selfHostRouter = {
         }),
       )
       .output(storedImageRenameResultSchema)
-      .handler(({ input, context }) =>
-        context.storage.renameStoredImage(input),
-      ),
+      .handler(({ input, context }) => {
+        for (const key of [input.oldKey, input.newKey]) {
+          if (!isInsideIncludePath(context.includePath, key)) {
+            return outsideIncludePath(key);
+          }
+        }
+        return context.storage.renameStoredImage(input);
+      }),
     download: storageOs
       .input(keyInput)
       .output(storedImageDownloadResultSchema)
       .handler(({ input, context }) =>
-        context.storage.downloadStoredImage(input.key),
+        isInsideIncludePath(context.includePath, input.key)
+          ? context.storage.downloadStoredImage(input.key)
+          : outsideIncludePath(input.key),
       ),
     probe: storageOs
       .input(keyInput)
       .output(storedImageMetadataResultSchema)
       .handler(({ input, context }) =>
-        context.storage.probeStoredImage(input.key),
+        isInsideIncludePath(context.includePath, input.key)
+          ? context.storage.probeStoredImage(input.key)
+          : outsideIncludePath(input.key),
       ),
     checkAccess: storageOs
       .output(imageStorageAccessResultSchema)

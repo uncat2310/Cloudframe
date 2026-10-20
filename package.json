@@ -16,5 +16,10 @@
     "*": [
       "prettier --write --ignore-unknown"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "@tanstack/start-server-core>h3-v2": "npm:h3@2.0.5"
+    }
   }
 }
