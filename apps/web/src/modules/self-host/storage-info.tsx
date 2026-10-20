@@ -16,8 +16,8 @@ export function SelfHostStorageInfo() {
   const runStorage = useSetAtom(settings.storage);
   const queryClient = useQueryClient();
   const { data: session } = useQuery(selfHostSessionQuery);
-  const backend =
-    session?.status === "signed-in" ? session.storage.backend : undefined;
+  const signedIn = session?.status === "signed-in" ? session : undefined;
+  const backend = signedIn?.storage.backend;
 
   const rows = [
     [
@@ -28,6 +28,16 @@ export function SelfHostStorageInfo() {
     ...(backend === "r2-binding" ? [] : [[t("endpoint"), raw.endpoint]]),
     [t("publicUrl"), raw.pubUrl],
     [t("includePath"), raw.includePath || t("none")],
+    [
+      t("thumbnails"),
+      signedIn?.storage.thumbnails === "cloudflare"
+        ? t("thumbnailsOn")
+        : t("thumbnailsOff"),
+    ],
+    [
+      t("settingsSync"),
+      signedIn?.settingsSync ? t("settingsSyncOn") : t("settingsSyncOff"),
+    ],
   ];
 
   async function testAccess() {

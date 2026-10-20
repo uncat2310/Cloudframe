@@ -240,6 +240,12 @@
     "testAccess": "测试连接",
     "accessOk": "已成功连接存储桶",
     "accessFailed": "无法访问存储桶：{message}",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "settingsSync": "设置同步",
+    "settingsSyncOn": "已开启：上传和画廊设置保存在服务器上，所有浏览器共用",
+    "settingsSyncOff": "未开启：每个浏览器单独保存",
+    "thumbnails": "画廊缩略图",
+    "thumbnailsOn": "Cloudflare 图片变换",
+    "thumbnailsOff": "未开启（显示原图）"
   }
 }

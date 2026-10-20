@@ -240,6 +240,12 @@
     "testAccess": "Test connection",
     "accessOk": "Connected to the bucket",
     "accessFailed": "Cannot access the bucket: {message}",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "settingsSync": "Settings sync",
+    "settingsSyncOn": "On: upload and gallery settings are kept on the server and shared by every browser",
+    "settingsSyncOff": "Off: each browser keeps its own",
+    "thumbnails": "Gallery thumbnails",
+    "thumbnailsOn": "Cloudflare Image Transformations",
+    "thumbnailsOff": "Off (originals shown)"
   }
 }
