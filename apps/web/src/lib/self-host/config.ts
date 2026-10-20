@@ -47,12 +47,9 @@ function readEnv(name: string) {
   return value ? value : undefined;
 }
 
-/**
- * A Cloudframe setting, read from `CLOUDFRAME_<name>`, falling back to the
- * `S3IP_<name>` name used before the rename so older deployments keep working.
- */
+/** A Cloudframe setting, read from the `CLOUDFRAME_<name>` variable. */
 export function readSetting(name: string) {
-  return readEnv(`CLOUDFRAME_${name}`) ?? readEnv(`S3IP_${name}`);
+  return readEnv(`CLOUDFRAME_${name}`);
 }
 
 const fieldEnvNames: Partial<Record<keyof S3Options, string>> = {

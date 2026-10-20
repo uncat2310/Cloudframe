@@ -21,6 +21,8 @@
 - **Manage**: rename, delete, download
 - **Interface**: English / 中文, light and dark themes
 
+Key template placeholders, compression and gallery options are described in the [settings reference](docs/settings.en.md).
+
 ## Deploy
 
 Pick one of three options; step-by-step instructions are in **[selfhost/README.md](selfhost/README.md)** (in Chinese).
@@ -71,4 +73,4 @@ The author and contributors of the original S3 Image Port are credited below.
 
 Cloudframe is built on **[S3 Image Port](https://github.com/yy4382/s3-image-port)** by [yy4382](https://github.com/yy4382) (synced past upstream v1.8.5). Uploading, the gallery, compression, HEIC and Live Photo support all come from the original project. Thank you!
 
-Compared with it, Cloudframe only keeps the self-hosted mode and targets Cloudflare R2: browser-side S3 settings, multiple profiles, profile sync and the bundled docs site are removed, and login and uploads are hardened. Help links for settings such as key templates still point to the original project's docs.
+Compared with it, Cloudframe only keeps the self-hosted mode and targets Cloudflare R2: browser-side S3 settings, multiple profiles, profile sync and the bundled docs site are removed, and login and uploads are hardened. Settings help now links to this repository's own docs.

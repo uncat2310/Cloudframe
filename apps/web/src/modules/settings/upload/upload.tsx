@@ -6,7 +6,7 @@ import { settings } from "@/stores/atoms/settings";
 import { focusAtom } from "jotai-optics";
 import { useLocale, useTranslations } from "use-intl";
 import { ExternalLink } from "lucide-react";
-import { upstreamDocsUrl } from "@/lib/docs-url";
+import { settingsDocsUrl } from "@/lib/docs-url";
 import { KeyTemplateSettingsInput } from "./key-template/setting-input";
 
 function UploadSettings() {
@@ -19,11 +19,7 @@ function UploadSettings() {
         <div className="flex items-center gap-2 justify-between">
           <h2 className="text-2xl font-bold">{t("upload")}</h2>
           <a
-            href={upstreamDocsUrl(
-              locale,
-              "settings-reference",
-              "upload-settings",
-            )}
+            href={settingsDocsUrl(locale, "upload-settings")}
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"

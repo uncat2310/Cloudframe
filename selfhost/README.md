@@ -188,8 +188,6 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs
 
 配置不完整时，面板会直接列出缺少或填错的变量，服务器日志里也会打印。
 
-> 改名前的变量名（`S3IP_PASSWORD`、`S3IP_SESSION_SECRET` 等 `S3IP_` 开头的名字）仍然有效；两种都设置时以 `CLOUDFRAME_` 开头的为准。
-
 ## 安全建议
 
 - 密码就是你存储桶的钥匙，请用足够长的随机密码（16 位以上）。
