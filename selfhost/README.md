@@ -42,7 +42,7 @@ Worker 通过 **R2 绑定** 直接读写存储桶，不需要创建 API 令牌�
 
    | 字段            | 说明                                                                                                                           |
    | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-   | `name`          | Worker 名称，默认 `s3-image-port`。后面创建 Worker 时的「项目名称」要和它一致                                                  |
+   | `name`          | Worker 名称，默认 `cloudframe`。后面创建 Worker 时的「项目名称」要和它一致                                                     |
    | `bucket_name`   | 你的 R2 存储桶名称                                                                                                             |
    | `R2_PUBLIC_URL` | 存储桶的公开访问地址，不要带结尾的 `/`                                                                                         |
    | `workers_dev`   | 是否开启 `*.workers.dev` 地址。本仓库设为 `false`，只用自定义域名访问。**没有自己的域名就改成 `true`**，否则部署后没有访问地址 |
@@ -56,9 +56,9 @@ Worker 通过 **R2 绑定** 直接读写存储桶，不需要创建 API 令牌�
 1. Cloudflare 控制台 → Workers 和 Pages → 创建 → Connect GitHub（导入 Git 仓库）。
 2. 授权 Cloudflare 的 GitHub 应用时，选 **Only select repositories**，只勾选你 Fork 的这个仓库。
 3. 选择仓库，填写：
-   - **项目名称**：与 `wrangler.jsonc` 里的 `name` 一致（默认 `s3-image-port`）
-   - **构建命令**：`pnpm --filter s3-image-port-web build:worker`
-   - **部署命令**：`pnpm --filter s3-image-port-web deploy:worker`
+   - **项目名称**：与 `wrangler.jsonc` 里的 `name` 一致（默认 `cloudframe`）
+   - **构建命令**：`pnpm --filter cloudframe-web build:worker`
+   - **部署命令**：`pnpm --filter cloudframe-web deploy:worker`
    - **根目录**：保持默认（`/`）
 4. 点「部署」，等构建完成（大约 2 分钟）。
 5. **建议关闭预览分支构建**：Worker → 设置 → 构建 → 切到「预览基础」→ 关闭「预览分支构建」→ 保存。否则以后推送到其他分支或开 PR 时，都会出现一个失败的检查。
@@ -107,7 +107,7 @@ Worker → 域 → 添加域名 → 选择你托管在 Cloudflare 上的域名 �
 
 ```bash
 pnpm install
-pnpm --filter s3-image-port-web build:worker
+pnpm --filter cloudframe-web build:worker
 cd apps/web
 npx wrangler@4 login                 # 浏览器里授权一次
 pnpm deploy:worker
@@ -140,8 +140,8 @@ npx wrangler@4 secret put S3IP_SESSION_SECRET -c .output/server/wrangler.json
 需要 Docker 和 Docker Compose。
 
 ```bash
-git clone <你的仓库地址> s3-image-port
-cd s3-image-port/selfhost
+git clone <你的仓库地址> cloudframe
+cd cloudframe/selfhost
 cp .env.example .env
 # 编辑 .env，填写第 1 步得到的信息和登录密码
 docker compose up -d --build
@@ -162,7 +162,7 @@ docker compose up -d --build
 
 ```bash
 pnpm install
-pnpm --filter s3-image-port-web build
+pnpm --filter cloudframe-web build
 cp selfhost/.env.example selfhost/.env   # 然后编辑
 node --env-file=selfhost/.env apps/web/.output/server/index.mjs
 ```

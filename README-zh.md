@@ -57,9 +57,9 @@
 
 ```bash
 pnpm install
-pnpm --filter s3-image-port-web dev     # 本地开发服务器
-pnpm --filter s3-image-port-web test    # 测试（在 Chromium 里运行）
-pnpm --filter s3-image-port-web lint
+pnpm --filter cloudframe-web dev     # 本地开发服务器
+pnpm --filter cloudframe-web test    # 测试（在 Chromium 里运行）
+pnpm --filter cloudframe-web lint
 ```
 
 ## 贡献者
