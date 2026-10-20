@@ -29,6 +29,16 @@ function workerEnv() {
   return (globalThis as { __env__?: Record<string, unknown> }).__env__;
 }
 
+/** Whether this request is being served by a Cloudflare Worker. */
+export function isCloudflareWorker() {
+  return workerEnv() !== undefined;
+}
+
+/** A Worker binding (R2 bucket, rate limiter…) by name, if bound. */
+export function workerBinding(name: string): unknown {
+  return workerEnv()?.[name];
+}
+
 function readEnv(name: string) {
   const fromWorker = workerEnv()?.[name];
   const value = (
@@ -51,8 +61,10 @@ let cached: SelfHostConfigResult | undefined;
 
 /**
  * Read the self-hosted R2 settings from server environment variables (or
- * Worker vars/secrets). The result is cached because they do not change at
- * runtime; on Workers it is first read inside a request, once bindings exist.
+ * Worker vars/secrets). A complete config is cached because it does not change
+ * at runtime; on Workers it is first read inside a request, once bindings
+ * exist. An incomplete one is re-read on every request, so fixing the
+ * variables takes effect without restarting the server.
  */
 export function loadSelfHostConfig(): SelfHostConfigResult {
   if (cached) return cached;
@@ -61,7 +73,7 @@ export function loadSelfHostConfig(): SelfHostConfigResult {
   const password = readEnv("S3IP_PASSWORD");
   if (!password) problems.push("S3IP_PASSWORD is not set");
 
-  const binding = workerEnv()?.[R2_BINDING_NAME];
+  const binding = workerBinding(R2_BINDING_NAME);
   const backend: SelfHostConfig["backend"] = isR2BucketLike(binding)
     ? { type: "r2-binding", bucket: binding }
     : { type: "s3" };
@@ -116,11 +128,17 @@ export function loadSelfHostConfig(): SelfHostConfigResult {
   }
 
   if (!s3.success || !password) {
-    cached = { ok: false, problems };
     console.error(
       `[self-host] R2 configuration is incomplete:\n- ${problems.join("\n- ")}`,
     );
-    return cached;
+    return { ok: false, problems };
+  }
+
+  const sessionSecret = readEnv("S3IP_SESSION_SECRET");
+  if (!sessionSecret && backend.type === "r2-binding") {
+    console.warn(
+      "[self-host] S3IP_SESSION_SECRET is not set: login cookies are signed with a key derived from the password alone. Add a long random secret.",
+    );
   }
 
   cached = {
@@ -132,8 +150,7 @@ export function loadSelfHostConfig(): SelfHostConfigResult {
       // Sessions are signed with a key derived from this secret and the
       // password, so changing the password signs every browser out.
       sessionSecret:
-        readEnv("S3IP_SESSION_SECRET") ??
-        (backend.type === "s3" ? s3.data.secretAccKey : ""),
+        sessionSecret ?? (backend.type === "s3" ? s3.data.secretAccKey : ""),
       keyTemplate: readEnv("S3IP_KEY_TEMPLATE"),
     },
   };

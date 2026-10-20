@@ -8,6 +8,22 @@ import analyzer from "vite-bundle-analyzer";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
 
+/**
+ * Sent with every page and API response (on Workers also written to
+ * `_headers` for static assets). The SPA shell has inline bootstrap scripts,
+ * so the CSP restricts framing, plugins, `<base>` and form targets rather
+ * than scripts.
+ */
+const securityHeaders = {
+  "Content-Security-Policy":
+    "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Strict-Transport-Security": "max-age=31536000",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -23,7 +39,23 @@ export default defineConfig({
         plugins: ["babel-plugin-react-compiler"],
       },
     }),
-    nitro(),
+    nitro({
+      routeRules: {
+        "/**": { headers: securityHeaders },
+        "/api/rpc/**": {
+          headers: { ...securityHeaders, "Cache-Control": "no-store" },
+        },
+        // Route rule headers win over the handler's, so the object proxy's
+        // sandbox has to be declared here too.
+        "/api/self-host/object": {
+          headers: {
+            ...securityHeaders,
+            "Content-Security-Policy":
+              "default-src 'none'; sandbox; frame-ancestors 'none'",
+          },
+        },
+      },
+    }),
     process.env.ANALYZE === "true" ? analyzer() : undefined,
   ],
   server: {
