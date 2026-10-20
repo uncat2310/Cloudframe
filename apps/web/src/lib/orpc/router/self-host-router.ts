@@ -2,6 +2,7 @@ import { createRatelimitMiddleware } from "@orpc/experimental-ratelimit";
 import { z } from "zod";
 import {
   imageStorageAccessResultSchema,
+  imageStorageFailureResultSchema,
   storageKeySchema,
   storedImageDeleteResultSchema,
   storedImageDownloadResultSchema,
@@ -9,6 +10,7 @@ import {
   storedImageMetadataResultSchema,
   storedImageRenameResultSchema,
   storedImageResultSchema,
+  type ImageStorageFailureResult,
 } from "@/modules/image-storage/schema";
 import {
   isCloudflareWorker,
@@ -19,9 +21,13 @@ import {
   workerBinding,
 } from "@/lib/self-host/config";
 import {
+  fromTrashKey,
   isImageOrVideoType,
   isInsideIncludePath,
+  isTrashKey,
   resolveUploadContentType,
+  toTrashKey,
+  TRASH_BATCH_SIZE,
 } from "@/lib/self-host/policy";
 import {
   clearSessionCookie,
@@ -35,7 +41,10 @@ import {
   MAX_SETTINGS_BYTES,
   syncedSettingsSchema,
 } from "@/lib/self-host/settings-store";
-import { getSelfHostStorage } from "@/lib/self-host/storage";
+import {
+  getSelfHostStorage,
+  getSelfHostTrashStorage,
+} from "@/lib/self-host/storage";
 import {
   createMemoryLimiter,
   createWorkersLimiter,
@@ -68,6 +77,7 @@ const requireSession = selfHostOs.middleware(
     return next({
       context: {
         storage: getSelfHostStorage(result.config),
+        trash: getSelfHostTrashStorage(result.config),
         includePath: result.config.s3.includePath,
       },
     });
@@ -126,6 +136,32 @@ function rejected(message: string) {
 function outsideIncludePath(key: string) {
   return rejected(`"${key}" is outside R2_INCLUDE_PATH`);
 }
+
+/**
+ * Why `key` can't be used by the regular storage operations: outside the
+ * include path, or inside the trash (reached only through `trash.*`).
+ */
+function keyProblem(includePath: string, key: string) {
+  if (!isInsideIncludePath(includePath, key)) return outsideIncludePath(key);
+  if (isTrashKey(key)) return rejected(`"${key}" is in the trash`);
+  return undefined;
+}
+
+const keyBatchSchema = z.array(storageKeySchema).max(TRASH_BATCH_SIZE);
+
+const trashItemsResultSchema = z.union([
+  z.object({
+    ok: z.literal(true),
+    value: z.array(
+      z.object({
+        /** The key the image had before it was deleted. */
+        key: storageKeySchema,
+        deletedAt: z.string().optional(),
+      }),
+    ),
+  }),
+  imageStorageFailureResultSchema,
+]);
 
 export const selfHostSessionSchema = z.discriminatedUnion("status", [
   z.object({
@@ -235,15 +271,89 @@ const settingsRouter = {
     }),
 };
 
+/** Images deleted from the panel, kept for 30 days by a lifecycle rule. */
+const trashRouter = {
+  list: storageOs
+    .output(trashItemsResultSchema)
+    .handler(async ({ context }) => {
+      const result = await context.trash.listStoredImages();
+      if (!result.ok) return result;
+      return {
+        ok: true as const,
+        value: result.value.flatMap(({ key, lastModified }) => {
+          const original = fromTrashKey(key);
+          return original === undefined
+            ? []
+            : [{ key: original, deletedAt: lastModified }];
+        }),
+      };
+    }),
+  /** Moves images back to their original keys, never over an existing one. */
+  restore: storageOs
+    .input(z.object({ keys: keyBatchSchema }))
+    .output(
+      z.object({
+        restored: z.array(storageKeySchema),
+        conflicts: z.array(storageKeySchema),
+        failed: z.array(storageKeySchema),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const outcome = {
+        restored: [] as string[],
+        conflicts: [] as string[],
+        failed: [] as string[],
+      };
+      for (const key of input.keys) {
+        if (keyProblem(context.includePath, key)) {
+          outcome.failed.push(key);
+          continue;
+        }
+        const moved = await context.storage.renameStoredImage({
+          oldKey: toTrashKey(key),
+          newKey: key,
+        });
+        if (moved.ok) outcome.restored.push(key);
+        else if (moved.error.reason === "already-exists") {
+          outcome.conflicts.push(key);
+        } else outcome.failed.push(key);
+      }
+      return outcome;
+    }),
+  /** Deletes trashed images for good. */
+  purge: storageOs
+    .input(z.object({ keys: z.array(storageKeySchema).max(1000) }))
+    .output(storedImageDeleteResultSchema)
+    .handler(async ({ input, context }) => {
+      for (const key of input.keys) {
+        const problem = keyProblem(context.includePath, key);
+        if (problem) return problem;
+      }
+      const result = await context.storage.deleteStoredImages(
+        input.keys.map(toTrashKey),
+      );
+      if (!result.ok) return result;
+      return { ok: true as const, value: { deletedKeys: input.keys } };
+    }),
+};
+
 export const selfHostRouter = {
   session,
   login,
   logout,
   settings: settingsRouter,
+  trash: trashRouter,
   storage: {
     list: storageOs
       .output(storedImageListResultSchema)
-      .handler(({ context }) => context.storage.listStoredImages()),
+      .handler(async ({ context }) => {
+        const result = await context.storage.listStoredImages();
+        if (!result.ok) return result;
+        return {
+          ok: true as const,
+          value: result.value.filter((image) => !isTrashKey(image.key)),
+        };
+      }),
     put: storageOs
       .input(
         z.object({
@@ -254,9 +364,8 @@ export const selfHostRouter = {
       )
       .output(storedImageResultSchema)
       .handler(({ input, context }) => {
-        if (!isInsideIncludePath(context.includePath, input.key)) {
-          return outsideIncludePath(input.key);
-        }
+        const problem = keyProblem(context.includePath, input.key);
+        if (problem) return problem;
         const contentType = resolveUploadContentType(
           input.key,
           input.contentType || input.body.type,
@@ -268,15 +377,28 @@ export const selfHostRouter = {
         }
         return context.storage.putStoredImage({ ...input, contentType });
       }),
+    /** Moves images to the trash; `trash.purge` deletes for good. */
     delete: storageOs
-      .input(z.object({ keys: z.array(storageKeySchema) }))
+      .input(z.object({ keys: keyBatchSchema }))
       .output(storedImageDeleteResultSchema)
-      .handler(({ input, context }) => {
-        const outside = input.keys.find(
-          (key) => !isInsideIncludePath(context.includePath, key),
-        );
-        if (outside !== undefined) return outsideIncludePath(outside);
-        return context.storage.deleteStoredImages(input.keys);
+      .handler(async ({ input, context }) => {
+        for (const key of input.keys) {
+          const problem = keyProblem(context.includePath, key);
+          if (problem) return problem;
+        }
+        const deletedKeys: string[] = [];
+        let firstFailure: ImageStorageFailureResult | undefined;
+        for (const key of input.keys) {
+          const moved = await context.storage.renameStoredImage({
+            oldKey: key,
+            newKey: toTrashKey(key),
+            overwrite: true,
+          });
+          if (moved.ok) deletedKeys.push(key);
+          else firstFailure ??= moved;
+        }
+        if (deletedKeys.length === 0 && firstFailure) return firstFailure;
+        return { ok: true as const, value: { deletedKeys } };
       }),
     rename: storageOs
       .input(
@@ -289,27 +411,26 @@ export const selfHostRouter = {
       .output(storedImageRenameResultSchema)
       .handler(({ input, context }) => {
         for (const key of [input.oldKey, input.newKey]) {
-          if (!isInsideIncludePath(context.includePath, key)) {
-            return outsideIncludePath(key);
-          }
+          const problem = keyProblem(context.includePath, key);
+          if (problem) return problem;
         }
         return context.storage.renameStoredImage(input);
       }),
     download: storageOs
       .input(keyInput)
       .output(storedImageDownloadResultSchema)
-      .handler(({ input, context }) =>
-        isInsideIncludePath(context.includePath, input.key)
-          ? context.storage.downloadStoredImage(input.key)
-          : outsideIncludePath(input.key),
+      .handler(
+        ({ input, context }) =>
+          keyProblem(context.includePath, input.key) ??
+          context.storage.downloadStoredImage(input.key),
       ),
     probe: storageOs
       .input(keyInput)
       .output(storedImageMetadataResultSchema)
-      .handler(({ input, context }) =>
-        isInsideIncludePath(context.includePath, input.key)
-          ? context.storage.probeStoredImage(input.key)
-          : outsideIncludePath(input.key),
+      .handler(
+        ({ input, context }) =>
+          keyProblem(context.includePath, input.key) ??
+          context.storage.probeStoredImage(input.key),
       ),
     checkAccess: storageOs
       .output(imageStorageAccessResultSchema)

@@ -16,22 +16,14 @@ import {
   SETTINGS_STORE_VERSION,
   getDefaultStoredSettings,
   optionsSchema,
-  optionsSchemaForLoad,
   profilesSchemaForLoad,
-  settingsForSyncSchema,
   storedSettingsSchema,
 } from "../schemas/settings";
-import { migrateFromV1 } from "../schemas/settings/migrations/v1-v3";
-import { storedSettingsIntoSyncFormat } from "../schemas/settings/format";
 import { storageKeys } from "@/lib/storage-keys";
 
 enableMapSet();
 
 const SETTINGS_STORE_KEY = storageKeys.profiles;
-const profileImportSchema = z.object({
-  name: z.string(),
-  data: optionsSchemaForLoad,
-});
 const replacementProfilesSchema = profilesSchemaForLoad.superRefine(
   (profiles, context) => {
     if (
@@ -48,16 +40,10 @@ const replacementProfilesSchema = profilesSchemaForLoad.superRefine(
   },
 );
 
-export type SettingsProfileReplacement =
-  | { type: "activate"; name: string }
-  | {
-      type: "apply-sync";
-      value: SetStateAction<z.infer<typeof settingsForSyncSchema>>;
-    }
-  | {
-      type: "apply-imported";
-      value: SetStateAction<z.infer<typeof profilesSchemaForLoad>>;
-    };
+export type SettingsProfileReplacement = {
+  type: "apply-imported";
+  value: SetStateAction<z.infer<typeof profilesSchemaForLoad>>;
+};
 
 const idleAccess = { status: "idle" as const };
 const testingAccess = { status: "testing" as const };
@@ -94,18 +80,6 @@ function validateStorage(raw: z.infer<typeof optionsSchema.shape.s3>) {
   return { status: "invalid" as const, errors };
 }
 
-function parseProfile(value: unknown) {
-  let parsed = value;
-  if (typeof value === "string") {
-    try {
-      parsed = JSON.parse(value) as unknown;
-    } catch (error) {
-      return { success: false as const, error };
-    }
-  }
-  return profileImportSchema.safeParse(parsed);
-}
-
 function activeProfile(value: z.infer<typeof profilesSchemaForLoad>) {
   return value.list.at(value.current) ?? value.list[0];
 }
@@ -113,7 +87,6 @@ function activeProfile(value: z.infer<typeof profilesSchemaForLoad>) {
 function replacementOutcome(
   previous: z.infer<typeof profilesSchemaForLoad>,
   next: z.infer<typeof profilesSchemaForLoad>,
-  explicitActivation = false,
 ) {
   const [previousActiveName, previousOptions] = activeProfile(previous);
   const [nextActiveName, nextOptions] = activeProfile(next);
@@ -133,9 +106,7 @@ function replacementOutcome(
     changed,
     profileReplaced:
       changed &&
-      (explicitActivation ||
-        !activeIdentityPreserved ||
-        !deepEqual(previousOptions, nextOptions)),
+      (!activeIdentityPreserved || !deepEqual(previousOptions, nextOptions)),
     previousActiveName,
     nextActiveName,
   };
@@ -433,213 +404,15 @@ export function createSettings({
       }
     },
   );
-  const sync = selectAtom(root, storedSettingsIntoSyncFormat, deepEqual);
-  const profiles = atom(
-    (get) => ({ profiles: get(root), sync: get(sync) }),
-    (
-      get,
-      set,
-      action:
-        | { type: "rename"; oldName: string; newName: string }
-        | { type: "duplicate"; name: string; newName: string }
-        | { type: "delete"; name: string }
-        | { type: "import"; value: unknown }
-        | { type: "import-v1"; value: unknown; name: string }
-        | { type: "export"; name: string },
-    ) => {
-      const current = get(root);
-      switch (action.type) {
-        case "rename": {
-          if (action.oldName === action.newName) {
-            return { status: "same-name" as const, name: action.oldName };
-          }
-          if (current.list.some(([name]) => name === action.newName)) {
-            return { status: "name-exists" as const, name: action.newName };
-          }
-          const index = current.list.findIndex(
-            ([name]) => name === action.oldName,
-          );
-          if (index === -1) {
-            return { status: "not-found" as const, name: action.oldName };
-          }
-          set(
-            root,
-            produce(current, (draft) => {
-              draft.list[index][0] = action.newName;
-            }),
-          );
-          return {
-            status: "renamed" as const,
-            oldName: action.oldName,
-            newName: action.newName,
-          };
-        }
-        case "duplicate": {
-          const source = current.list.find(
-            ([name]) => name === action.name,
-          )?.[1];
-          if (!source) {
-            return { status: "not-found" as const, name: action.name };
-          }
-          let newName = action.newName;
-          let counter = 1;
-          while (current.list.some(([name]) => name === newName)) {
-            counter++;
-            newName = `${action.name} (copy ${counter})`;
-          }
-          set(
-            root,
-            produce(current, (draft) => {
-              draft.list.push([newName, source]);
-            }),
-          );
-          return {
-            status: "duplicated" as const,
-            name: action.name,
-            newName,
-          };
-        }
-        case "delete": {
-          const index = current.list.findIndex(
-            ([name]) => name === action.name,
-          );
-          if (index === -1) {
-            return { status: "not-found" as const, name: action.name };
-          }
-          if (index === current.current) {
-            return { status: "active-profile" as const, name: action.name };
-          }
-          set(
-            root,
-            produce(current, (draft) => {
-              draft.list.splice(index, 1);
-              if (draft.current > index) draft.current--;
-            }),
-          );
-          return { status: "deleted" as const, name: action.name };
-        }
-        case "import":
-        case "import-v1": {
-          const imported =
-            action.type === "import"
-              ? parseProfile(action.value)
-              : (() => {
-                  const result = migrateFromV1(action.value);
-                  return result instanceof Error
-                    ? { success: false as const, error: result }
-                    : {
-                        success: true as const,
-                        data: { name: action.name, data: result },
-                      };
-                })();
-          if (!imported.success) {
-            return { status: "invalid" as const, error: imported.error };
-          }
-          const { name, data } = imported.data;
-          if (current.list.some(([profileName]) => profileName === name)) {
-            return { status: "name-exists" as const, name };
-          }
-          set(
-            root,
-            produce(current, (draft) => {
-              draft.list.push([name, data]);
-            }),
-          );
-          return { status: "imported" as const, name };
-        }
-        case "export": {
-          const profile = current.list.find(
-            ([name]) => name === action.name,
-          )?.[1];
-          if (!profile) {
-            return { status: "not-found" as const, name: action.name };
-          }
-          return {
-            status: "exported" as const,
-            name: action.name,
-            value: JSON.stringify(
-              { name: action.name, data: profile },
-              null,
-              2,
-            ),
-          };
-        }
-      }
-    },
-  );
   const replaceProfile = atom(
     null,
     (get, set, action: SettingsProfileReplacement) => {
       const previous = get(root);
-      if (action.type === "activate") {
-        const index = previous.list.findIndex(([name]) => name === action.name);
-        if (index === -1) {
-          return {
-            status: "not-found" as const,
-            changed: false,
-            profileReplaced: false,
-          };
-        }
-        if (index === previous.current) {
-          const activeName = activeProfile(previous)[0];
-          return {
-            status: "already-active" as const,
-            changed: false,
-            profileReplaced: false,
-            previousActiveName: activeName,
-            nextActiveName: activeName,
-          };
-        }
-        const next = preserveEqualActiveBranches(
-          previous,
-          produce(previous, (draft) => {
-            draft.current = index;
-          }),
-        );
-        const outcome = replacementOutcome(previous, next, true);
-        set(root, next);
-        return outcome;
-      }
-
-      let candidate: unknown;
-      if (action.type === "apply-sync") {
-        const currentSync = get(sync);
-        const nextSync =
-          typeof action.value === "function"
-            ? action.value(currentSync)
-            : action.value;
-        const parsed = settingsForSyncSchema.safeParse(nextSync);
-        if (!parsed.success) {
-          return {
-            status: "invalid" as const,
-            changed: false,
-            profileReplaced: false,
-            error: parsed.error,
-          };
-        }
-        const currentName = activeProfile(previous)[0];
-        const list = parsed.data.data.list;
-        const matchingIndex = list.findIndex(([name]) => name === currentName);
-        candidate = {
-          list,
-          current:
-            matchingIndex !== -1
-              ? matchingIndex
-              : previous.current < list.length
-                ? previous.current
-                : 0,
-        };
-      } else {
-        candidate =
-          typeof action.value === "function"
-            ? action.value(previous)
-            : action.value;
-      }
-
-      const parsed =
-        action.type === "apply-imported"
-          ? replacementProfilesSchema.safeParse(candidate)
-          : profilesSchemaForLoad.safeParse(candidate);
+      const candidate =
+        typeof action.value === "function"
+          ? action.value(previous)
+          : action.value;
+      const parsed = replacementProfilesSchema.safeParse(candidate);
       if (!parsed.success) {
         return {
           status: "invalid" as const,
@@ -655,7 +428,6 @@ export function createSettings({
     },
   );
 
-  return { profiles, storage: storageAtom, upload, gallery, replaceProfile };
+  return { storage: storageAtom, upload, gallery, replaceProfile };
 }
-
 export const settings = createSettings();

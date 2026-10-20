@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  fromTrashKey,
   isImageOrVideoType,
   isInsideIncludePath,
+  isTrashKey,
   resolveUploadContentType,
+  toTrashKey,
 } from "./policy";
 
 describe("self-host storage policy", () => {
@@ -44,5 +47,14 @@ describe("self-host storage policy", () => {
       "text/html",
     );
     expect(resolveUploadContentType("noext", "text/html")).toBe("text/html");
+  });
+
+  it("maps keys to and from the trash", () => {
+    expect(toTrashKey("i/2026/a.png")).toBe(".trash/i/2026/a.png");
+    expect(fromTrashKey(".trash/i/2026/a.png")).toBe("i/2026/a.png");
+    expect(fromTrashKey("i/a.png")).toBeUndefined();
+    expect(isTrashKey(".trash/x.png")).toBe(true);
+    expect(isTrashKey("x.trash/a.png")).toBe(false);
+    expect(fromTrashKey(toTrashKey(".hidden/a.png"))).toBe(".hidden/a.png");
   });
 });
