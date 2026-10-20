@@ -31,19 +31,20 @@ Pick one of three options; step-by-step instructions are in **[selfhost/README.m
 | Docker             | Your server           | A VPS or always-on machine, an R2 API token |
 | Node               | None                  | Node.js 22, an R2 API token                 |
 
-On Workers, in short:
+On Workers, in short (section 2 of the guide has every click):
 
 1. Create an R2 bucket and enable public access (custom domain or r2.dev);
-2. Fork this repo and set the bucket name and public URL in `apps/web/wrangler.jsonc`;
+2. Fork this repo and set the bucket name and public URL in `apps/web/wrangler.jsonc`; without a domain of your own, set `workers_dev` to `true`;
 3. Cloudflare dashboard → Workers & Pages → import the Git repository, with the build and deploy commands from the guide;
-4. Add the secrets `S3IP_PASSWORD` (login password) and `S3IP_SESSION_SECRET` (a long random string) under the Worker's Variables and Secrets;
-5. Open `https://<worker-name>.<your-subdomain>.workers.dev` and sign in.
+4. Add `S3IP_PASSWORD` (login password) and `S3IP_SESSION_SECRET` (a long random string) under the Worker's Variables and Secrets, **both as secrets**;
+5. Attach your own domain under the Worker's Domains (e.g. `pic.example.com`) and add a login rate-limiting rule to it;
+6. Open your domain and sign in.
 
 Every push to `main` redeploys.
 
 ## Security
 
-- Login is rate limited: 10 attempts per minute per IP and 60 per minute overall; on Workers the client IP comes from Cloudflare and cannot be forged.
+- Login is rate limited: 10 attempts per minute per IP and 60 per minute overall; on Workers the client IP comes from Cloudflare and cannot be forged. A Cloudflare rate-limiting rule on your domain blocks password guessing precisely.
 - Sessions are signed HttpOnly, SameSite=Strict cookies valid for 30 days.
 - Only images and videos can be uploaded; files read through the panel are served sandboxed, so they can never run as a page.
 - Every response carries security headers (no framing, no MIME sniffing, HSTS and more).

@@ -33,37 +33,75 @@
 
 ## 2. 部署到 Cloudflare Workers（免费）
 
-Worker 通过 **R2 绑定** 直接读写存储桶，不需要创建 API 令牌；访问地址自带 HTTPS。
+Worker 通过 **R2 绑定** 直接读写存储桶，不需要创建 API 令牌；访问地址自带 HTTPS。下面按「在 Cloudflare 后台连接 GitHub」的方式一步步来，全程不用安装任何工具。（后台菜单名称可能随 Cloudflare 更新略有不同。）
 
-### 2.1 修改配置
+### 2.1 Fork 并修改配置
 
-在你的仓库里编辑 `apps/web/wrangler.jsonc`，改两处后提交：
+1. 在 GitHub 上 Fork 本仓库。
+2. 编辑你仓库里的 `apps/web/wrangler.jsonc`：
 
-```jsonc
-"bucket_name": "my-image-bucket",              // 你的存储桶名称
-"R2_PUBLIC_URL": "https://img.example.com",    // 存储桶的公开访问地址
-```
+   | 字段            | 说明                                                                                                                           |
+   | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+   | `name`          | Worker 名称，默认 `s3-image-port`。后面创建 Worker 时的「项目名称」要和它一致                                                  |
+   | `bucket_name`   | 你的 R2 存储桶名称                                                                                                             |
+   | `R2_PUBLIC_URL` | 存储桶的公开访问地址，不要带结尾的 `/`                                                                                         |
+   | `workers_dev`   | 是否开启 `*.workers.dev` 地址。本仓库设为 `false`，只用自定义域名访问。**没有自己的域名就改成 `true`**，否则部署后没有访问地址 |
 
-`binding` 必须保持为 `BUCKET`。`name`（Worker 名称，默认 `s3-image-port`）可以按需修改。
+   `binding` 必须保持为 `BUCKET`，`ratelimits` 里的 `LOGIN_RATE_LIMITER` 也保持不变。
 
-本仓库的 `wrangler.jsonc` 关闭了 `workers.dev` 地址（`"workers_dev": false`），面板只通过自定义域名访问，这样域名上的登录限速规则（见「安全建议」）不会被绕过。如果你没有自己的域名，把它改回 `true`，否则部署后面板没有访问地址。
+3. 提交到 `main` 分支。
 
-### 2.2 方式 A：在 Cloudflare 后台连接 GitHub（推荐，不用装任何工具）
+### 2.2 在 Cloudflare 创建 Worker
 
-1. Cloudflare 控制台 → Workers 和 Pages → 创建 → 导入 Git 仓库，选择你的仓库。
-2. 构建设置：
+1. Cloudflare 控制台 → Workers 和 Pages → 创建 → Connect GitHub（导入 Git 仓库）。
+2. 授权 Cloudflare 的 GitHub 应用时，选 **Only select repositories**，只勾选你 Fork 的这个仓库。
+3. 选择仓库，填写：
    - **项目名称**：与 `wrangler.jsonc` 里的 `name` 一致（默认 `s3-image-port`）
    - **构建命令**：`pnpm --filter s3-image-port-web build:worker`
    - **部署命令**：`pnpm --filter s3-image-port-web deploy:worker`
-   - **根目录**：保持默认（仓库根目录）
-3. 首次部署完成后，进入该 Worker → 设置 → 变量和机密 → 添加，类型都选 **机密（Secret）**：
-   - `S3IP_PASSWORD`：你的登录密码；
-   - `S3IP_SESSION_SECRET`：一串 32 位以上的随机字符（例如 `openssl rand -base64 32` 的输出），用来签名登录 cookie。不设置时 cookie 只由密码派生的密钥签名，cookie 一旦泄露就可能被离线暴力破解出密码。
-4. 在 Worker → 域 → 添加域名，绑定自己的域名（例如 `pic.example.com`），打开它输入密码即可。没有自己的域名时，按上面的说明开启 `workers_dev`，用 `https://s3-image-port.<你的子域>.workers.dev` 访问。
+   - **根目录**：保持默认（`/`）
+4. 点「部署」，等构建完成（大约 2 分钟）。
+5. **建议关闭预览分支构建**：Worker → 设置 → 构建 → 切到「预览基础」→ 关闭「预览分支构建」→ 保存。否则以后推送到其他分支或开 PR 时，都会出现一个失败的检查。
 
-之后每次推送到仓库都会自动重新部署。（后台菜单名称可能随 Cloudflare 更新略有不同。）
+之后每次推送到 `main` 都会自动重新部署。
 
-### 2.3 方式 B：在电脑上用命令行部署
+### 2.3 添加登录密码和会话密钥
+
+Worker → 设置 → 运行时变量和密钥（确认上方选中的是「生产」）→ 添加变量。每一个都要**勾选「值」输入框右侧的「密钥」复选框**，再点「添加 1 个变量并部署」：
+
+| 名称                  | 值                                                                          |
+| --------------------- | --------------------------------------------------------------------------- |
+| `S3IP_PASSWORD`       | 你的登录密码，建议 16 位以上的随机字符                                      |
+| `S3IP_SESSION_SECRET` | 用来签名登录 cookie 的随机字符串，在终端运行 `openssl rand -base64 32` 生成 |
+
+保存后检查一下：这两行的类型应该显示为「密钥」，值显示为「值已加密」。如果显示为「变量」并且能看到明文，说明没有勾选「密钥」，把它删掉重新添加。
+
+> 不设置 `S3IP_SESSION_SECRET` 也能用，但登录 cookie 只用由密码派生的密钥签名：cookie 一旦泄露，就可能被离线暴力破解出密码。设置后平时使用没有任何区别；想让所有设备立即登出时，换一个新值即可。
+
+### 2.4 绑定自己的域名
+
+Worker → 域 → 添加域名 → 选择你托管在 Cloudflare 上的域名 → 填子域名（例如 `pic`）→ 添加域名。DNS 记录和证书会自动创建，一两分钟后打开 `https://pic.example.com`，输入密码即可。
+
+没有自己的域名时跳过这一步：确认 `workers_dev` 是 `true`，用 `https://<Worker 名称>.<你的子域>.workers.dev` 访问。
+
+### 2.5 加登录限速规则（推荐，需要自定义域名）
+
+应用自带的登录限流只是近似计数，挡不住刻意分散的请求。在域名上再加一条 Cloudflare 免费的「速率限制规则」，会精确得多：
+
+1. 进入你的域名 → 安全性 → 安全规则 → 「速率限制规则」→ 创建规则。
+2. 规则名称随意，例如 `Cloudframe login limit`。
+3. 点「编辑表达式」，填入（把域名换成你的）：
+
+   ```
+   (http.host eq "pic.example.com" and http.request.uri.path eq "/api/rpc/selfHost/login")
+   ```
+
+4. 具有相同特征：IP；请求：`4`；期间：10 秒；操作：阻止；持续时间：10 秒；状态：活动。
+5. 点「部署」并确认。
+
+免费版每个域名只能有 1 条速率限制规则。要让这条规则不被绕过，`workers_dev` 需要保持 `false`，不然别人可以改走 `workers.dev` 地址。
+
+### 2.6 另一种方式：在电脑上用命令行部署
 
 需要 Node.js 22 和 pnpm（`corepack enable` 即可）：
 
@@ -77,9 +115,11 @@ npx wrangler@4 secret put S3IP_PASSWORD -c .output/server/wrangler.json
 npx wrangler@4 secret put S3IP_SESSION_SECRET -c .output/server/wrangler.json
 ```
 
-### 2.4 Workers 上的可选变量
+使用自定义域名时，部署后同样按 2.4 在后台绑定域名。
 
-在 Worker 设置 → 变量和机密里添加（`wrangler.jsonc` 开启了 `keep_vars`，重新部署不会清掉它们）：
+### 2.7 Workers 上的可选变量
+
+在 Worker 设置 → 运行时变量和密钥里添加（`wrangler.jsonc` 开启了 `keep_vars`，重新部署不会清掉它们）：
 
 | 变量                | 说明                                        |
 | ------------------- | ------------------------------------------- |
@@ -87,9 +127,9 @@ npx wrangler@4 secret put S3IP_SESSION_SECRET -c .output/server/wrangler.json
 | `S3IP_KEY_TEMPLATE` | 新浏览器的默认上传路径模板                  |
 | `R2_BUCKET`         | 仅用于在设置页显示存储桶名称                |
 
-`wrangler.jsonc` 里还声明了一个 `LOGIN_RATE_LIMITER` 限流绑定，用来在所有 Worker 实例之间共享登录次数限制，不需要额外设置。分支预览地址（`preview_urls`）默认关闭，因为预览版本会使用和正式版相同的存储桶与密码。
+`wrangler.jsonc` 里的 `LOGIN_RATE_LIMITER` 是 Cloudflare 的限流绑定，用来在 Worker 实例之间共享登录次数（近似计数），不需要额外设置。分支预览地址（`preview_urls`）默认关闭，因为预览版本会使用和正式版相同的存储桶与密码。
 
-### 2.5 免费额度
+### 2.8 免费额度
 
 个人图床一般用不完：Workers 免费版每天 10 万次请求，每次请求 10 ms CPU 时间（等待 R2 的时间不计）；R2 每月免费 10 GB 存储、100 万次写类操作、1000 万次读类操作，流量免费。
 
@@ -152,11 +192,8 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs
 
 - 密码就是你存储桶的钥匙，请用足够长的随机密码（16 位以上）。
 - 登录限流：每个 IP 每分钟最多 10 次，所有来源合计每分钟最多 60 次。
-  - Workers 上用 Cloudflare 提供、无法伪造的 `CF-Connecting-IP` 识别 IP，计数在所有实例间共享。
+  - Workers 上用 Cloudflare 提供、无法伪造的 `CF-Connecting-IP` 识别 IP。计数由 Cloudflare 的限流绑定在实例之间共享，但只是近似值，大量分散的新连接仍可能超出限制，所以建议再按 2.5 加上域名的速率限制规则。
   - Docker / Node 默认不信任任何转发头（客户端可以随意伪造），所有请求共用一个计数。放在反向代理后面时，把 `S3IP_CLIENT_IP_HEADER` 设为代理写入的请求头（Caddy / Nginx 一般是 `x-forwarded-for`，Cloudflare Tunnel 是 `cf-connecting-ip`），才会按 IP 分别计数。**不要在没有代理时设置它。**
-- 用自定义域名时，可以再在该域名的 Cloudflare 安全规则里加一条免费的「速率限制规则」，比应用内的限流更精确，例如：
-  - 表达式：`(http.host eq "pic.example.com" and http.request.uri.path eq "/api/rpc/selfHost/login")`
-  - 按 IP 计数，10 秒内超过 4 次就阻止 10 秒。
 - 只能上传图片和视频（Live Photo 的 `.mov`）。
 - 登录状态保存 30 天，「退出登录」只清除当前浏览器的 cookie。想让所有设备失效，修改 `S3IP_SESSION_SECRET` 或密码即可。
 - Workers 自带 HTTPS。Docker / Node **暴露到公网时请加 HTTPS**，否则密码会明文传输。例如用 Caddy 反向代理（自动申请证书）：
