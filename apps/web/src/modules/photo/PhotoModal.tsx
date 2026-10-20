@@ -208,7 +208,7 @@ function PhotoModalToolbar({
       toast.success(tControl("deleteSuccess"));
       handleBack();
     } else if (outcome.status === "invalid-settings") {
-      toast.error(tControl("s3SettingsNotFound"));
+      toast.error(tControl("storageSettingsNotFound"));
     } else {
       toast.error(tControl("deleteFailed"));
     }

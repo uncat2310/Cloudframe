@@ -6,11 +6,11 @@
   },
   "settings": {
     "title": "Settings",
-    "s3": "S3",
+    "storage": "Storage",
     "upload": "Upload",
     "keyTemplate": {
       "title": "Key template",
-      "description": "Template for the S3 key. Learn more at <more>docs</more>, including the available placeholders.",
+      "description": "Template for a file's name (key) in the bucket. Learn more at <more>docs</more>, including the available placeholders.",
       "endWithExtWarning": "End with \".'{{ext'}}\" is generally recommended.",
       "deprecatedPlaceholderWarning": "placeholder {placeholder} has been deprecated, use {instead} instead",
       "systemBadge": "System",
@@ -31,18 +31,18 @@
       "quality": "Quality",
       "title": "Image convertion and compression",
       "description": "Convert or compress your image before uploading them.",
-      "enableDesc": "If turned off, images will be uploaded to S3 as is.",
+      "enableDesc": "If turned off, images are uploaded as they are.",
       "qualityDesc": "Quality for the compressed image, integer from 1 to 100."
     },
     "gallery": {
       "title": "Gallery",
       "autoRefresh": "Auto Refresh",
-      "autoRefreshDesc": "Refresh the gallery every time it loads. If enabled, there will be more List requests, which may slightly increase S3 costs."
+      "autoRefreshDesc": "Refresh the gallery every time it loads. If enabled, there will be more list requests, which may slightly increase R2 costs."
     }
   },
   "gallery": {
     "control": {
-      "s3SettingsNotFound": "S3 settings not found",
+      "storageSettingsNotFound": "Storage settings not found",
       "requestingDelete": "Requested delete...",
       "deleteSuccess": "Deleted photos",
       "deleteFailed": "Failed to delete photos",
@@ -63,14 +63,14 @@
       "itemsPerPage": "Per page"
     },
     "store": {
-      "s3SettingsNotFound": "S3 settings not found",
+      "storageSettingsNotFound": "Storage settings not found",
       "failedToFetchPhotos": "Failed to fetch photos",
       "fetchedPhotos": "Fetched photos"
     },
     "grid": {
       "noPhotosFound": "No photos found",
       "loadPhotos": "Load Photos",
-      "includePathTip": "You are only listing photos from path <mono>{path}</mono> since you have set an include path filter. This might be why no photos are found. If this is incorrect, please update it in the <link>S3 settings</link>."
+      "includePathTip": "You are only listing photos under <mono>{path}</mono> because the server sets a path prefix (R2_INCLUDE_PATH). This might be why no photos are found. The current prefix is shown in the <link>storage settings</link>."
     },
     "filter": {
       "filterOptions": "Filter Options",
@@ -126,7 +126,7 @@
         "delete": "Delete",
         "renameModal": {
           "title": "Rename Photo",
-          "description": "Enter a new name (key) for this photo. This will be the full path in your S3 bucket.",
+          "description": "Enter a new name (key) for this photo. This will be its full path in the bucket.",
           "currentLabel": "Current:",
           "placeholder": "Enter new key/path",
           "cancel": "Cancel",
@@ -181,7 +181,7 @@
       "upload": "Upload"
     },
     "alerts": {
-      "s3NotConfigured": "S3 settings are not configured"
+      "storageNotConfigured": "Storage is not configured"
     }
   },
   "common": {
