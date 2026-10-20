@@ -55,9 +55,9 @@ Requires Node.js 22 and pnpm (`corepack enable`):
 
 ```bash
 pnpm install
-pnpm --filter s3-image-port-web dev     # dev server
-pnpm --filter s3-image-port-web test    # tests (run in Chromium)
-pnpm --filter s3-image-port-web lint
+pnpm --filter cloudframe-web dev     # dev server
+pnpm --filter cloudframe-web test    # tests (run in Chromium)
+pnpm --filter cloudframe-web lint
 ```
 
 ## Contributors

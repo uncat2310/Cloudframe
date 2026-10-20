@@ -2,12 +2,12 @@
 #   cp .env.example .env   # then fill it in
 #   docker compose up -d --build
 services:
-  s3-image-port:
+  cloudframe:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: s3-image-port-selfhost
-    container_name: s3-image-port
+    image: cloudframe-selfhost
+    container_name: cloudframe
     env_file: .env
     ports:
       # Behind a reverse proxy on the same host, use "127.0.0.1:3000:3000"
