@@ -3,7 +3,7 @@ export const routing = {
   locales: ["en", "zh"],
 
   // Used when no locale matches
-  defaultLocale: "en",
+  defaultLocale: "zh",
 } as const;
 
 export type LocaleType = (typeof routing.locales)[number];
