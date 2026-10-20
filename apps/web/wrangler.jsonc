@@ -6,7 +6,10 @@
   "name": "s3-image-port",
   "compatibility_date": "2025-10-01",
   "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": true,
+  // The panel is served from a custom domain (pic.example.com), whose WAF
+  // rate-limits logins; the *.workers.dev address would bypass that rule.
+  // Set to true if you deploy without a custom domain.
+  "workers_dev": false,
   // Branch previews would share the production bucket and password.
   "preview_urls": false,
   // Keep variables added in the Cloudflare dashboard across deploys.
