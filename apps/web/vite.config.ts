@@ -32,7 +32,9 @@ export default defineConfig({
     tailwindcss(),
     tanstackStart({
       router: { entry: "main.tsx" },
-      spa: { enabled: true },
+      // Written as index.html so Cloudflare's static assets can serve the
+      // shell for every page without invoking the Worker (see wrangler.jsonc).
+      spa: { enabled: true, prerender: { outputPath: "/index" } },
     }),
     react({
       babel: {
