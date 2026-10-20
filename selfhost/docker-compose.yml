@@ -13,4 +13,10 @@ services:
       # Behind a reverse proxy on the same host, use "127.0.0.1:3000:3000"
       # so the panel is only reachable through it.
       - "3000:3000"
+    volumes:
+      # Upload and gallery settings shared by every browser.
+      - cloudframe-data:/data
     restart: unless-stopped
+
+volumes:
+  cloudframe-data:

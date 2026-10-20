@@ -29,6 +29,14 @@
       "bucket_name": "img"
     }
   ],
+  // Upload and gallery settings shared by every signed-in browser
+  // (the "cloudframe-settings" namespace). Remove to keep them per browser.
+  "kv_namespaces": [
+    {
+      "binding": "SETTINGS",
+      "id": "6b368dfe455e4298aa060cbe1fc7052f"
+    }
+  ],
   // Login attempts per client IP, shared across Worker instances.
   "ratelimits": [
     {

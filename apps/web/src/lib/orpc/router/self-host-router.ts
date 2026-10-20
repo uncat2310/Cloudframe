@@ -30,6 +30,11 @@ import {
   isSecureRequest,
   passwordMatches,
 } from "@/lib/self-host/session";
+import {
+  getSettingsStore,
+  MAX_SETTINGS_BYTES,
+  syncedSettingsSchema,
+} from "@/lib/self-host/settings-store";
 import { getSelfHostStorage } from "@/lib/self-host/storage";
 import {
   createMemoryLimiter,
@@ -41,6 +46,8 @@ import { baseOs } from "./base-router";
 
 const selfHostOs = baseOs.errors({
   UNAUTHORIZED: {},
+  SETTINGS_SYNC_UNAVAILABLE: { status: 501 },
+  SETTINGS_TOO_LARGE: { status: 413 },
   SELF_HOST_NOT_CONFIGURED: {
     status: 503,
     data: z.object({ problems: z.array(z.string()) }),
@@ -130,6 +137,8 @@ export const selfHostSessionSchema = z.discriminatedUnion("status", [
     status: z.literal("signed-in"),
     storage: publicStorageSchema,
     keyTemplate: z.string().nullable(),
+    /** Whether upload and gallery settings are kept on the server. */
+    settingsSync: z.boolean(),
   }),
 ]);
 
@@ -147,6 +156,7 @@ const session = selfHostOs
       status: "signed-in" as const,
       storage: toPublicStorage(result.config),
       keyTemplate: result.config.keyTemplate ?? null,
+      settingsSync: getSettingsStore() !== undefined,
     };
   });
 
@@ -193,10 +203,32 @@ const logout = selfHostOs.handler(({ context }) => {
 const storageOs = selfHostOs.use(requireSession);
 const keyInput = z.object({ key: storageKeySchema });
 
+const settingsRouter = {
+  /** The shared settings, or `null` until a browser first saves them. */
+  get: storageOs
+    .output(z.object({ value: syncedSettingsSchema.nullable() }))
+    .handler(async ({ errors }) => {
+      const store = getSettingsStore();
+      if (!store) throw errors.SETTINGS_SYNC_UNAVAILABLE();
+      return { value: await store.read() };
+    }),
+  put: storageOs
+    .input(z.object({ value: syncedSettingsSchema }))
+    .handler(async ({ input, errors }) => {
+      const store = getSettingsStore();
+      if (!store) throw errors.SETTINGS_SYNC_UNAVAILABLE();
+      if (JSON.stringify(input.value).length > MAX_SETTINGS_BYTES) {
+        throw errors.SETTINGS_TOO_LARGE();
+      }
+      await store.write(input.value);
+    }),
+};
+
 export const selfHostRouter = {
   session,
   login,
   logout,
+  settings: settingsRouter,
   storage: {
     list: storageOs
       .output(storedImageListResultSchema)
