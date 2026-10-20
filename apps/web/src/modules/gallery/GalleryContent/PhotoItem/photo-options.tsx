@@ -96,7 +96,7 @@ export function PhotoOptions({
       toast.success(tControl("deleteSuccess"));
       onAfterDelete?.();
     } else if (outcome.status === "invalid-settings") {
-      toast.error(tControl("s3SettingsNotFound"));
+      toast.error(tControl("storageSettingsNotFound"));
     } else {
       toast.error(tControl("deleteFailed"));
     }
@@ -133,7 +133,7 @@ export function PhotoOptions({
       setOpened(false);
       onAfterRename?.(newKey);
     } else if (outcome.status === "invalid-settings") {
-      toast.error(tControl("s3SettingsNotFound"));
+      toast.error(tControl("storageSettingsNotFound"));
     } else if (outcome.status === "already-exists") {
       toast.error(tRename("objectExists"));
     } else if (outcome.status === "partial-rename") {
@@ -171,7 +171,7 @@ export function PhotoOptions({
     if (outcome.status !== "accessed" || outcome.purpose !== "download") {
       toast.error(
         outcome.status === "invalid-settings"
-          ? tControl("s3SettingsNotFound")
+          ? tControl("storageSettingsNotFound")
           : tDownload("failed"),
       );
       return;

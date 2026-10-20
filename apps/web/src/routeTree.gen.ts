@@ -21,7 +21,7 @@ import { Route as LocaleRootLayoutGalleryRouteImport } from './routes/$locale/_r
 import { Route as LocaleRootLayoutSettingsRouteRouteImport } from './routes/$locale/_root-layout/settings/route'
 import { Route as LocaleRootLayoutSettingsIndexRouteImport } from './routes/$locale/_root-layout/settings/index'
 import { Route as LocaleRootLayoutSettingsUploadRouteImport } from './routes/$locale/_root-layout/settings/upload'
-import { Route as LocaleRootLayoutSettingsS3RouteImport } from './routes/$locale/_root-layout/settings/s3'
+import { Route as LocaleRootLayoutSettingsStorageRouteImport } from './routes/$locale/_root-layout/settings/storage'
 import { Route as LocaleRootLayoutSettingsGalleryRouteImport } from './routes/$locale/_root-layout/settings/gallery'
 
 const LocaleRouteRoute = LocaleRouteRouteImport.update({
@@ -86,10 +86,10 @@ const LocaleRootLayoutSettingsUploadRoute =
     path: '/upload',
     getParentRoute: () => LocaleRootLayoutSettingsRouteRoute,
   } as any)
-const LocaleRootLayoutSettingsS3Route =
-  LocaleRootLayoutSettingsS3RouteImport.update({
-    id: '/s3',
-    path: '/s3',
+const LocaleRootLayoutSettingsStorageRoute =
+  LocaleRootLayoutSettingsStorageRouteImport.update({
+    id: '/storage',
+    path: '/storage',
     getParentRoute: () => LocaleRootLayoutSettingsRouteRoute,
   } as any)
 const LocaleRootLayoutSettingsGalleryRoute =
@@ -110,7 +110,7 @@ export interface FileRoutesByFullPath {
   '/api/self-host/object': typeof ApiSelfHostObjectRoute
   '/$locale/': typeof LocaleRootLayoutIndexRoute
   '/$locale/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
-  '/$locale/settings/s3': typeof LocaleRootLayoutSettingsS3Route
+  '/$locale/settings/storage': typeof LocaleRootLayoutSettingsStorageRoute
   '/$locale/settings/upload': typeof LocaleRootLayoutSettingsUploadRoute
   '/$locale/settings/': typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -123,7 +123,7 @@ export interface FileRoutesByTo {
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/api/self-host/object': typeof ApiSelfHostObjectRoute
   '/$locale/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
-  '/$locale/settings/s3': typeof LocaleRootLayoutSettingsS3Route
+  '/$locale/settings/storage': typeof LocaleRootLayoutSettingsStorageRoute
   '/$locale/settings/upload': typeof LocaleRootLayoutSettingsUploadRoute
   '/$locale/settings': typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -140,7 +140,7 @@ export interface FileRoutesById {
   '/api/self-host/object': typeof ApiSelfHostObjectRoute
   '/$locale/_root-layout/': typeof LocaleRootLayoutIndexRoute
   '/$locale/_root-layout/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
-  '/$locale/_root-layout/settings/s3': typeof LocaleRootLayoutSettingsS3Route
+  '/$locale/_root-layout/settings/storage': typeof LocaleRootLayoutSettingsStorageRoute
   '/$locale/_root-layout/settings/upload': typeof LocaleRootLayoutSettingsUploadRoute
   '/$locale/_root-layout/settings/': typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -157,7 +157,7 @@ export interface FileRouteTypes {
     | '/api/self-host/object'
     | '/$locale/'
     | '/$locale/settings/gallery'
-    | '/$locale/settings/s3'
+    | '/$locale/settings/storage'
     | '/$locale/settings/upload'
     | '/$locale/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -170,7 +170,7 @@ export interface FileRouteTypes {
     | '/api/rpc/$'
     | '/api/self-host/object'
     | '/$locale/settings/gallery'
-    | '/$locale/settings/s3'
+    | '/$locale/settings/storage'
     | '/$locale/settings/upload'
     | '/$locale/settings'
   id:
@@ -186,7 +186,7 @@ export interface FileRouteTypes {
     | '/api/self-host/object'
     | '/$locale/_root-layout/'
     | '/$locale/_root-layout/settings/gallery'
-    | '/$locale/_root-layout/settings/s3'
+    | '/$locale/_root-layout/settings/storage'
     | '/$locale/_root-layout/settings/upload'
     | '/$locale/_root-layout/settings/'
   fileRoutesById: FileRoutesById
@@ -284,11 +284,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleRootLayoutSettingsUploadRouteImport
       parentRoute: typeof LocaleRootLayoutSettingsRouteRoute
     }
-    '/$locale/_root-layout/settings/s3': {
-      id: '/$locale/_root-layout/settings/s3'
-      path: '/s3'
-      fullPath: '/$locale/settings/s3'
-      preLoaderRoute: typeof LocaleRootLayoutSettingsS3RouteImport
+    '/$locale/_root-layout/settings/storage': {
+      id: '/$locale/_root-layout/settings/storage'
+      path: '/storage'
+      fullPath: '/$locale/settings/storage'
+      preLoaderRoute: typeof LocaleRootLayoutSettingsStorageRouteImport
       parentRoute: typeof LocaleRootLayoutSettingsRouteRoute
     }
     '/$locale/_root-layout/settings/gallery': {
@@ -303,7 +303,7 @@ declare module '@tanstack/react-router' {
 
 interface LocaleRootLayoutSettingsRouteRouteChildren {
   LocaleRootLayoutSettingsGalleryRoute: typeof LocaleRootLayoutSettingsGalleryRoute
-  LocaleRootLayoutSettingsS3Route: typeof LocaleRootLayoutSettingsS3Route
+  LocaleRootLayoutSettingsStorageRoute: typeof LocaleRootLayoutSettingsStorageRoute
   LocaleRootLayoutSettingsUploadRoute: typeof LocaleRootLayoutSettingsUploadRoute
   LocaleRootLayoutSettingsIndexRoute: typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -311,7 +311,7 @@ interface LocaleRootLayoutSettingsRouteRouteChildren {
 const LocaleRootLayoutSettingsRouteRouteChildren: LocaleRootLayoutSettingsRouteRouteChildren =
   {
     LocaleRootLayoutSettingsGalleryRoute: LocaleRootLayoutSettingsGalleryRoute,
-    LocaleRootLayoutSettingsS3Route: LocaleRootLayoutSettingsS3Route,
+    LocaleRootLayoutSettingsStorageRoute: LocaleRootLayoutSettingsStorageRoute,
     LocaleRootLayoutSettingsUploadRoute: LocaleRootLayoutSettingsUploadRoute,
     LocaleRootLayoutSettingsIndexRoute: LocaleRootLayoutSettingsIndexRoute,
   }

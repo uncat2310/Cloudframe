@@ -15,7 +15,15 @@ export type SelfHostConfig = {
   password: string;
   sessionSecret: string;
   keyTemplate: string | undefined;
+  /**
+   * How the gallery gets thumbnails: `cloudflare` uses Cloudflare Image
+   * Transformations on the public URL's zone; `off` shows the originals.
+   */
+  thumbnails: ThumbnailMode;
 };
+
+export const thumbnailModeSchema = z.enum(["off", "cloudflare"]);
+export type ThumbnailMode = z.infer<typeof thumbnailModeSchema>;
 
 /** Name of the R2 bucket binding in `wrangler.jsonc`. */
 export const R2_BINDING_NAME = "BUCKET";
@@ -157,6 +165,9 @@ export function loadSelfHostConfig(): SelfHostConfigResult {
       sessionSecret:
         sessionSecret ?? (backend.type === "s3" ? s3.data.secretAccKey : ""),
       keyTemplate: readSetting("KEY_TEMPLATE"),
+      thumbnails: thumbnailModeSchema
+        .catch("off")
+        .parse(readSetting("THUMBNAILS")?.toLowerCase()),
     },
   };
   return cached;
@@ -169,11 +180,13 @@ export const publicStorageSchema = z.object({
   bucket: z.string(),
   pubUrl: z.string(),
   includePath: z.string(),
+  thumbnails: thumbnailModeSchema,
 });
 
 export function toPublicStorage({
   backend,
   s3,
+  thumbnails,
 }: SelfHostConfig): z.infer<typeof publicStorageSchema> {
   return {
     backend: backend.type,
@@ -181,5 +194,6 @@ export function toPublicStorage({
     bucket: s3.bucket,
     pubUrl: s3.pubUrl,
     includePath: s3.includePath,
+    thumbnails,
   };
 }

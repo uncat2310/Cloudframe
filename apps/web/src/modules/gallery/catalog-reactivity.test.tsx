@@ -324,7 +324,7 @@ describe("catalog React reactivity", () => {
     fireEvent.error(screen.getByAltText(alpha.key));
 
     await waitFor(() => expect(storage.probe).toHaveBeenCalledTimes(1));
-    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    fireEvent.click(screen.getByRole("button", { name: "Check again" }));
     expect(storage.probe).toHaveBeenCalledTimes(1);
 
     act(() => {
@@ -345,7 +345,7 @@ describe("catalog React reactivity", () => {
       "src",
       "https://cdn.example.com/i/alpha.webp",
     );
-    expect(screen.getByRole("button", { name: "Refresh" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Check again" })).toBeDisabled();
 
     mounted.unmount();
     await settle();

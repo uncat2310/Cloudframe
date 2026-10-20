@@ -137,6 +137,7 @@ function KeyTemplateInputWithReset(props: {
   onChange: (value: string) => void;
   inputProps?: ComponentPropsWithoutRef<typeof Input>;
 }) {
+  const t = useTranslations("settings.keyTemplate");
   const { value, onChange } = props;
   return (
     <div className="relative">
@@ -152,7 +153,7 @@ function KeyTemplateInputWithReset(props: {
           "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
           value === defaultKeyTemplate && "hidden",
         )}
-        aria-label="Reset to default"
+        aria-label={t("resetToDefault")}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
@@ -191,7 +192,7 @@ function PresetList() {
                     <Button
                       variant="outline"
                       size="icon-sm"
-                      aria-label="System preset actions"
+                      aria-label={t("presets.systemActions")}
                     >
                       <MoreHorizontalIcon />
                     </Button>
@@ -283,7 +284,7 @@ function PresetItem({
             size="icon-sm"
             onClick={() => setIsEditing(false)}
             disabled={!!error}
-            aria-label="Save"
+            aria-label={t("presets.save")}
           >
             <CheckIcon />
           </Button>

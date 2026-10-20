@@ -57,6 +57,7 @@ function PhotoModalContent({
   galleryState: string | undefined;
   gallerySearch: Record<string, unknown>;
 }) {
+  const tItem = useTranslations("gallery.item");
   const itemAtom = useMemo(() => imageCatalog.item(path), [path]);
   const item = useAtomValue(itemAtom);
   const photoAtom = useMemo(
@@ -98,11 +99,15 @@ function PhotoModalContent({
       </div>
       {!photo ? (
         <div className="flex flex-col items-center justify-center">
-          <div className="text-white text-2xl font-bold">Photo not found</div>
-          <div className="text-white text-sm">Key: {path}</div>
+          <div className="text-white text-2xl font-bold">
+            {tItem("notFound")}
+          </div>
+          <div className="text-white text-sm">
+            {tItem("loadError.key", { key: path })}
+          </div>
           <div className="flex gap-2">
             <Button size="icon" variant="ghost" onClick={navigateBack}>
-              Go back to gallery
+              {tItem("options.backToGallery")}
             </Button>
           </div>
         </div>
@@ -208,7 +213,7 @@ function PhotoModalToolbar({
       toast.success(tControl("deleteSuccess"));
       handleBack();
     } else if (outcome.status === "invalid-settings") {
-      toast.error(tControl("s3SettingsNotFound"));
+      toast.error(tControl("storageSettingsNotFound"));
     } else {
       toast.error(tControl("deleteFailed"));
     }

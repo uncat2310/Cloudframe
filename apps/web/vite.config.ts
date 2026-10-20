@@ -1,5 +1,5 @@
 // vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
@@ -24,15 +24,38 @@ const securityHeaders = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 };
 
+/**
+ * HEIC decoding, the image codecs and the Live Photo player only ever run in
+ * the browser, loaded with a dynamic import(). On the server they are replaced
+ * by an empty module so they don't bloat the Worker bundle.
+ */
+const BROWSER_ONLY_MODULES =
+  /^(heic-to|livephotoskit|@jsquash\/(avif|jpeg|jxl|png|webp))(\/|$)/;
+const BROWSER_ONLY_STUB = "\0browser-only-stub";
+
+function browserOnlyOnServer(): Plugin {
+  return {
+    name: "cloudframe:browser-only-on-server",
+    enforce: "pre",
+    applyToEnvironment: (environment) => environment.name !== "client",
+    resolveId: (id) =>
+      BROWSER_ONLY_MODULES.test(id) ? BROWSER_ONLY_STUB : undefined,
+    load: (id) => (id === BROWSER_ONLY_STUB ? "export default {};" : undefined),
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    browserOnlyOnServer(),
     Icons({ compiler: "jsx", jsx: "react" }),
     tsconfigPaths(),
     tailwindcss(),
     tanstackStart({
       router: { entry: "main.tsx" },
-      spa: { enabled: true },
+      // Written as index.html so Cloudflare's static assets can serve the
+      // shell for every page without invoking the Worker (see wrangler.jsonc).
+      spa: { enabled: true, prerender: { outputPath: "/index" } },
     }),
     react({
       babel: {

@@ -67,7 +67,7 @@ export function PhotoGrid() {
     if (outcome.status === "refreshed") {
       toast.message(tStore("fetchedPhotos"));
     } else if (outcome.status === "invalid-settings") {
-      toast.error(tStore("s3SettingsNotFound"));
+      toast.error(tStore("storageSettingsNotFound"));
     } else if (outcome.status === "refresh-failed") {
       toast.error(tStore("failedToFetchPhotos"));
     }
@@ -176,7 +176,7 @@ function PhotoGridEmpty({ loadPhotos }: { loadPhotos: () => Promise<void> }) {
               link: (chunks) => (
                 <Link
                   from="/$locale/gallery"
-                  to="/$locale/settings/s3"
+                  to="/$locale/settings/storage"
                   params={(prev) => ({ locale: prev.locale })}
                   className="underline underline-offset-2 hover:text-primary"
                 >
