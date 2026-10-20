@@ -95,7 +95,7 @@ export const optionsSchema = z.object({
   gallery: gallerySettingsSchema,
 });
 
-export const optionsSchemaForLoad = z.object({
+const optionsSchemaForLoad = z.object({
   s3: s3SettingsSchemaForLoad.catch(getDefaultOptions().s3),
   upload: uploadSettingsSchemaForLoad.catch(getDefaultOptions().upload),
   gallery: gallerySettingsSchemaForLoad.catch(getDefaultOptions().gallery),

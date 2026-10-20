@@ -21,6 +21,7 @@ import { Route as LocaleRootLayoutGalleryRouteImport } from './routes/$locale/_r
 import { Route as LocaleRootLayoutSettingsRouteRouteImport } from './routes/$locale/_root-layout/settings/route'
 import { Route as LocaleRootLayoutSettingsIndexRouteImport } from './routes/$locale/_root-layout/settings/index'
 import { Route as LocaleRootLayoutSettingsUploadRouteImport } from './routes/$locale/_root-layout/settings/upload'
+import { Route as LocaleRootLayoutSettingsTrashRouteImport } from './routes/$locale/_root-layout/settings/trash'
 import { Route as LocaleRootLayoutSettingsStorageRouteImport } from './routes/$locale/_root-layout/settings/storage'
 import { Route as LocaleRootLayoutSettingsGalleryRouteImport } from './routes/$locale/_root-layout/settings/gallery'
 
@@ -86,6 +87,12 @@ const LocaleRootLayoutSettingsUploadRoute =
     path: '/upload',
     getParentRoute: () => LocaleRootLayoutSettingsRouteRoute,
   } as any)
+const LocaleRootLayoutSettingsTrashRoute =
+  LocaleRootLayoutSettingsTrashRouteImport.update({
+    id: '/trash',
+    path: '/trash',
+    getParentRoute: () => LocaleRootLayoutSettingsRouteRoute,
+  } as any)
 const LocaleRootLayoutSettingsStorageRoute =
   LocaleRootLayoutSettingsStorageRouteImport.update({
     id: '/storage',
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/$locale/': typeof LocaleRootLayoutIndexRoute
   '/$locale/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
   '/$locale/settings/storage': typeof LocaleRootLayoutSettingsStorageRoute
+  '/$locale/settings/trash': typeof LocaleRootLayoutSettingsTrashRoute
   '/$locale/settings/upload': typeof LocaleRootLayoutSettingsUploadRoute
   '/$locale/settings/': typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -124,6 +132,7 @@ export interface FileRoutesByTo {
   '/api/self-host/object': typeof ApiSelfHostObjectRoute
   '/$locale/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
   '/$locale/settings/storage': typeof LocaleRootLayoutSettingsStorageRoute
+  '/$locale/settings/trash': typeof LocaleRootLayoutSettingsTrashRoute
   '/$locale/settings/upload': typeof LocaleRootLayoutSettingsUploadRoute
   '/$locale/settings': typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -141,6 +150,7 @@ export interface FileRoutesById {
   '/$locale/_root-layout/': typeof LocaleRootLayoutIndexRoute
   '/$locale/_root-layout/settings/gallery': typeof LocaleRootLayoutSettingsGalleryRoute
   '/$locale/_root-layout/settings/storage': typeof LocaleRootLayoutSettingsStorageRoute
+  '/$locale/_root-layout/settings/trash': typeof LocaleRootLayoutSettingsTrashRoute
   '/$locale/_root-layout/settings/upload': typeof LocaleRootLayoutSettingsUploadRoute
   '/$locale/_root-layout/settings/': typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/$locale/'
     | '/$locale/settings/gallery'
     | '/$locale/settings/storage'
+    | '/$locale/settings/trash'
     | '/$locale/settings/upload'
     | '/$locale/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/api/self-host/object'
     | '/$locale/settings/gallery'
     | '/$locale/settings/storage'
+    | '/$locale/settings/trash'
     | '/$locale/settings/upload'
     | '/$locale/settings'
   id:
@@ -187,6 +199,7 @@ export interface FileRouteTypes {
     | '/$locale/_root-layout/'
     | '/$locale/_root-layout/settings/gallery'
     | '/$locale/_root-layout/settings/storage'
+    | '/$locale/_root-layout/settings/trash'
     | '/$locale/_root-layout/settings/upload'
     | '/$locale/_root-layout/settings/'
   fileRoutesById: FileRoutesById
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleRootLayoutSettingsUploadRouteImport
       parentRoute: typeof LocaleRootLayoutSettingsRouteRoute
     }
+    '/$locale/_root-layout/settings/trash': {
+      id: '/$locale/_root-layout/settings/trash'
+      path: '/trash'
+      fullPath: '/$locale/settings/trash'
+      preLoaderRoute: typeof LocaleRootLayoutSettingsTrashRouteImport
+      parentRoute: typeof LocaleRootLayoutSettingsRouteRoute
+    }
     '/$locale/_root-layout/settings/storage': {
       id: '/$locale/_root-layout/settings/storage'
       path: '/storage'
@@ -304,6 +324,7 @@ declare module '@tanstack/react-router' {
 interface LocaleRootLayoutSettingsRouteRouteChildren {
   LocaleRootLayoutSettingsGalleryRoute: typeof LocaleRootLayoutSettingsGalleryRoute
   LocaleRootLayoutSettingsStorageRoute: typeof LocaleRootLayoutSettingsStorageRoute
+  LocaleRootLayoutSettingsTrashRoute: typeof LocaleRootLayoutSettingsTrashRoute
   LocaleRootLayoutSettingsUploadRoute: typeof LocaleRootLayoutSettingsUploadRoute
   LocaleRootLayoutSettingsIndexRoute: typeof LocaleRootLayoutSettingsIndexRoute
 }
@@ -312,6 +333,7 @@ const LocaleRootLayoutSettingsRouteRouteChildren: LocaleRootLayoutSettingsRouteR
   {
     LocaleRootLayoutSettingsGalleryRoute: LocaleRootLayoutSettingsGalleryRoute,
     LocaleRootLayoutSettingsStorageRoute: LocaleRootLayoutSettingsStorageRoute,
+    LocaleRootLayoutSettingsTrashRoute: LocaleRootLayoutSettingsTrashRoute,
     LocaleRootLayoutSettingsUploadRoute: LocaleRootLayoutSettingsUploadRoute,
     LocaleRootLayoutSettingsIndexRoute: LocaleRootLayoutSettingsIndexRoute,
   }

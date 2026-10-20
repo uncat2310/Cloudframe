@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { loadSelfHostConfig } from "@/lib/self-host/config";
 import {
+  fromTrashKey,
   isImageOrVideoType,
   isInsideIncludePath,
 } from "@/lib/self-host/policy";
@@ -27,7 +28,10 @@ export const Route = createFileRoute("/api/self-host/object")({
         }
         const key = new URL(request.url).searchParams.get("key");
         if (!key) return new Response(null, { status: 400 });
-        if (!isInsideIncludePath(result.config.s3.includePath, key)) {
+        // Trashed images are previewed through here too (the public URL
+        // blocks the trash), judged by the key they had before deletion.
+        const originalKey = fromTrashKey(key) ?? key;
+        if (!isInsideIncludePath(result.config.s3.includePath, originalKey)) {
           return new Response(null, { status: 403 });
         }
 

@@ -44,7 +44,8 @@
       "autoRefresh": "Auto Refresh",
       "autoRefreshDesc": "Refresh the gallery every time it loads. If enabled, there will be more list requests, which may slightly increase R2 costs."
     },
-    "viewDocs": "View documentation"
+    "viewDocs": "View documentation",
+    "trash": "Trash"
   },
   "gallery": {
     "control": {
@@ -60,7 +61,7 @@
       "selectedUrls": "selected URLs",
       "deleteConfirm": {
         "title": "Delete confirm",
-        "description": "Are you sure you want to delete these items?",
+        "description": "They will be moved to the trash, where you can restore them from Settings → Trash for 30 days.",
         "cancel": "Cancel",
         "delete": "Delete"
       }
@@ -154,7 +155,7 @@
         },
         "deleteModal": {
           "title": "Delete Confirm",
-          "description": "Are you sure you want to delete this item?",
+          "description": "They will be moved to the trash, where you can restore them from Settings → Trash for 30 days.",
           "cancel": "Cancel",
           "delete": "Delete"
         },
@@ -247,5 +248,27 @@
     "thumbnails": "Gallery thumbnails",
     "thumbnailsOn": "Cloudflare Image Transformations",
     "thumbnailsOff": "Off (originals shown)"
+  },
+  "trash": {
+    "title": "Trash",
+    "description": "Images deleted in the panel are moved here first and purged for good 30 days after deletion.",
+    "loading": "Loading…",
+    "loadFailed": "Couldn't load the trash: {message}",
+    "empty": "The trash is empty.",
+    "count": "{count} items",
+    "restore": "Restore",
+    "restoreAll": "Restore all",
+    "deleteForever": "Delete forever",
+    "emptyTrash": "Empty trash",
+    "confirmTitle": "Delete forever",
+    "confirmDescription": "These files will be deleted for good and can't be recovered.",
+    "confirmDelete": "Delete forever",
+    "deletedAt": "Deleted {time}",
+    "daysLeft": "{days} days left",
+    "restored": "Restored {count} items",
+    "conflicts": "{count} items not restored: a file with the same name already exists",
+    "failed": "{count} items couldn't be restored",
+    "purged": "Deleted {count} items forever",
+    "purgeFailed": "Couldn't delete forever: {message}"
   }
 }

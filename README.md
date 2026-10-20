@@ -18,7 +18,7 @@
 - **Upload**: drag and drop, paste or pick files; optional compression and conversion (WebP / AVIF / JPEG / PNG); custom key templates such as `i/{{year}}/{{month}}/{{day}}/{{ulid-dayslice}}.{{ext}}`
 - **Gallery**: grid view, search by name, filter and sort by date; HEIC and Apple Live Photo support
 - **Share**: copy the image URL or Markdown in one click
-- **Manage**: rename, delete, download
+- **Manage**: rename, delete, download; deleted images go to a trash and can be restored for 30 days
 - **Settings sync**: compression, key templates and other settings live on the server, the same on every browser and device
 - **Interface**: English / 中文, light and dark themes
 
