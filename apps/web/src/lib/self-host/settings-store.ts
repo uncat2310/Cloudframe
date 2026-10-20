@@ -13,6 +13,18 @@ export const syncedSettingsSchema = z.object({
 });
 export type SyncedSettings = z.infer<typeof syncedSettingsSchema>;
 
+/**
+ * Settings as stored, with the server time of the save. Workers KV is
+ * eventually consistent, so a read can briefly return an older copy; the
+ * timestamp lets browsers ignore anything older than what they already have.
+ */
+export type StoredSettings = { value: SyncedSettings; updatedAt: number };
+
+const storedSettingsSchema = z.object({
+  value: syncedSettingsSchema,
+  updatedAt: z.number().int().nonnegative(),
+});
+
 /** Name of the Workers KV binding in `wrangler.jsonc`. */
 export const SETTINGS_KV_BINDING = "SETTINGS";
 const KV_KEY = "settings";
@@ -22,8 +34,9 @@ export const MAX_SETTINGS_BYTES = 64 * 1024;
 
 export type SettingsStore = {
   kind: "workers-kv" | "file";
-  read(): Promise<SyncedSettings | null>;
-  write(value: SyncedSettings): Promise<void>;
+  read(): Promise<StoredSettings | null>;
+  /** Saves `value` stamped with the current time, and returns what was stored. */
+  write(value: SyncedSettings): Promise<StoredSettings>;
 };
 
 type KvNamespaceLike = {
@@ -40,22 +53,37 @@ function isKvNamespaceLike(value: unknown): value is KvNamespaceLike {
   );
 }
 
-/** Stored JSON back to settings, or `null` when missing or not valid. */
-function parseStored(raw: string | null): SyncedSettings | null {
+/**
+ * Stored JSON back to settings, or `null` when missing or not valid. Bare
+ * settings (saved before timestamps were added) count as the oldest copy.
+ */
+function parseStored(raw: string | null): StoredSettings | null {
   if (raw === null) return null;
+  let json: unknown;
   try {
-    const parsed = syncedSettingsSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : null;
+    json = JSON.parse(raw);
   } catch {
     return null;
   }
+  const stored = storedSettingsSchema.safeParse(json);
+  if (stored.success) return stored.data;
+  const bare = syncedSettingsSchema.safeParse(json);
+  return bare.success ? { value: bare.data, updatedAt: 0 } : null;
+}
+
+function stamp(value: SyncedSettings): StoredSettings {
+  return { value, updatedAt: Date.now() };
 }
 
 function kvStore(kv: KvNamespaceLike): SettingsStore {
   return {
     kind: "workers-kv",
     read: async () => parseStored(await kv.get(KV_KEY)),
-    write: (value) => kv.put(KV_KEY, JSON.stringify(value)),
+    async write(value) {
+      const stored = stamp(value);
+      await kv.put(KV_KEY, JSON.stringify(stored));
+      return stored;
+    },
   };
 }
 
@@ -83,9 +111,11 @@ function fileStore(directory: string): SettingsStore {
       const { mkdir, rename, writeFile } = await import("node:fs/promises");
       const { file, temp } = await paths();
       await mkdir(directory, { recursive: true });
+      const stored = stamp(value);
       // Write then rename, so a crash never leaves a half-written file.
-      await writeFile(temp, JSON.stringify(value), "utf8");
+      await writeFile(temp, JSON.stringify(stored), "utf8");
       await rename(temp, file);
+      return stored;
     },
   };
 }

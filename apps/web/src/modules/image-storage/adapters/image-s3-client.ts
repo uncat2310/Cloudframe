@@ -8,6 +8,7 @@ import {
   GetBucketCorsCommand,
   CopyObjectCommand,
 } from "@aws-sdk/client-s3";
+import { STORED_IMAGE_CACHE_CONTROL } from "../cache-control";
 import type { S3Options } from "@/stores/schemas/settings";
 import mime from "mime";
 
@@ -49,6 +50,7 @@ class ImageS3Client {
             ? new Uint8Array(await file.arrayBuffer())
             : file,
         ContentType: contentTypeForBody(file, key),
+        CacheControl: STORED_IMAGE_CACHE_CONTROL,
       }),
     );
     assertSuccessfulResponse("Upload", response.$metadata.httpStatusCode);
