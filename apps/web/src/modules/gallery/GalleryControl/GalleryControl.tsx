@@ -83,7 +83,7 @@ export function GalleryControl() {
     if (outcome.status === "superseded") return outcome;
     if (outcome.status === "deleted") toast.success(t("deleteSuccess"));
     else if (outcome.status === "invalid-settings")
-      toast.error(t("s3SettingsNotFound"));
+      toast.error(t("storageSettingsNotFound"));
     else toast.error(t("deleteFailed"));
     return outcome;
   };
@@ -106,7 +106,7 @@ export function GalleryControl() {
                   if (outcome.status === "refreshed")
                     toast.message(tStore("fetchedPhotos"));
                   else if (outcome.status === "invalid-settings")
-                    toast.error(tStore("s3SettingsNotFound"));
+                    toast.error(tStore("storageSettingsNotFound"));
                   else if (outcome.status === "refresh-failed")
                     toast.error(tStore("failedToFetchPhotos"));
                 }}

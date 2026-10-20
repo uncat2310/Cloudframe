@@ -63,7 +63,7 @@ export function UploadContent() {
             <Button
               onClick={() => {
                 if (!storageConfigured) {
-                  toast.error(t("alerts.s3NotConfigured"));
+                  toast.error(t("alerts.storageNotConfigured"));
                   return;
                 }
                 send({

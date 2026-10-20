@@ -6,11 +6,11 @@
   },
   "settings": {
     "title": "设置",
-    "s3": "S3",
+    "storage": "存储",
     "upload": "上传",
     "keyTemplate": {
       "title": "键（名称）模板",
-      "description": "上传到 S3 时的命名模板。在<more>文档</more>中了解更多，包括可以使用的占位符等。",
+      "description": "上传时文件在存储桶中的命名模板。在<more>文档</more>中了解更多，包括可以使用的占位符等。",
       "endWithExtWarning": "建议以 \".'{{ext'}}\" 结尾。",
       "deprecatedPlaceholderWarning": "占位符{placeholder}已被弃用，请使用{instead}替代",
       "systemBadge": "系统",
@@ -31,18 +31,18 @@
       "quality": "质量",
       "qualityDesc": "压缩图像的质量，1 到 100 之间的整数。",
       "description": "在上传之前转换或压缩您的图像。",
-      "enableDesc": "如果关闭，图像将按原样上传到 S3。",
+      "enableDesc": "如果关闭，图像将按原样上传。",
       "title": "图像转换和压缩"
     },
     "gallery": {
       "title": "画廊",
       "autoRefresh": "自动刷新",
-      "autoRefreshDesc": "每次加载画廊时自动刷新。如果启用，会出现更多的 List 请求，可能会小幅增加 S3 费用。"
+      "autoRefreshDesc": "每次加载画廊时自动刷新。如果启用，会产生更多的列表请求，可能会小幅增加 R2 费用。"
     }
   },
   "gallery": {
     "control": {
-      "s3SettingsNotFound": "未找到 S3 设置",
+      "storageSettingsNotFound": "未找到存储设置",
       "requestingDelete": "正在请求删除...",
       "deleteSuccess": "已删除照片",
       "deleteFailed": "删除照片失败",
@@ -60,14 +60,14 @@
       }
     },
     "store": {
-      "s3SettingsNotFound": "未找到 S3 设置",
+      "storageSettingsNotFound": "未找到存储设置",
       "failedToFetchPhotos": "获取照片失败",
       "fetchedPhotos": "已获取照片"
     },
     "grid": {
       "noPhotosFound": "未找到照片",
       "loadPhotos": "加载照片",
-      "includePathTip": "您仅列出路径 <mono>{path}</mono> 下的照片，因为您已设置了包含路径过滤器。这可能是为什么未找到照片。如果这不正确，请在<link>S3 设置</link>中更新。"
+      "includePathTip": "您仅列出路径 <mono>{path}</mono> 下的照片，因为服务器设置了路径前缀（R2_INCLUDE_PATH）。这可能是未找到照片的原因。当前前缀可以在<link>存储设置</link>中查看。"
     },
     "filter": {
       "filterOptions": "过滤选项",
@@ -120,7 +120,7 @@
         "delete": "删除",
         "renameModal": {
           "title": "重命名照片",
-          "description": "为此照片输入新名称（键）。这将是您 S3 存储桶中的完整路径。",
+          "description": "为此照片输入新名称（键）。这将是它在存储桶中的完整路径。",
           "currentLabel": "当前：",
           "placeholder": "输入新的键/路径",
           "cancel": "取消",
@@ -181,7 +181,7 @@
       "upload": "上传"
     },
     "alerts": {
-      "s3NotConfigured": "S3 设置未配置"
+      "storageNotConfigured": "存储尚未配置"
     }
   },
   "common": {

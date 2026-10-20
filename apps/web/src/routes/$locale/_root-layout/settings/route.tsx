@@ -33,14 +33,14 @@ function SettingPageSwitcher() {
     <div className="flex flex-col gap-2 mb-4 md:mb-0">
       <Link
         from="/$locale/settings"
-        to="/$locale/settings/s3"
+        to="/$locale/settings/storage"
         params={(prev) => ({ locale: prev.locale })}
         className={cn(
           buttonVariants({ variant: "ghost" }),
           "justify-start data-[status=active]:bg-muted data-[status=active]:hover:bg-accent",
         )}
       >
-        {t("s3")}
+        {t("storage")}
       </Link>
       <Link
         from="/$locale/settings"
