@@ -6,7 +6,7 @@ import { galleryFilterSearchParamsSchema } from "@/modules/gallery/hooks/use-dis
 export const Route = createFileRoute("/$locale/_root-layout/gallery")({
   head: () =>
     createHeadTags({
-      title: "Gallery | S3 Image Port",
+      title: "Gallery | Cloudframe",
       description:
         "Browse, search, and manage images stored in your S3 buckets.",
     }),
