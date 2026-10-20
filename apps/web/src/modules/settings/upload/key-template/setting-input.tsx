@@ -31,7 +31,7 @@ import {
   PlusIcon,
   RefreshCcw,
 } from "lucide-react";
-import { upstreamDocsUrl } from "@/lib/docs-url";
+import { settingsDocsUrl } from "@/lib/docs-url";
 import { useLocale, useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { v7 as uuidV7 } from "uuid";
@@ -82,11 +82,7 @@ export function KeyTemplateSettingsInput() {
         {t.rich("description", {
           more: (chunks) => (
             <a
-              href={upstreamDocsUrl(
-                locale,
-                "settings-reference",
-                "key-template",
-              )}
+              href={settingsDocsUrl(locale, "key-template")}
               target="_blank"
               rel="noreferrer"
               className="underline underline-offset-1"

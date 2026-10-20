@@ -8,7 +8,7 @@ export function Footer() {
         <div>© {new Date().getFullYear()} Cloudframe</div>
         <div className="flex items-center gap-4">
           <a
-            href="https://github.com/uncat2310/s3-image-port"
+            href="https://github.com/uncat2310/Cloudframe"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors duration-300"

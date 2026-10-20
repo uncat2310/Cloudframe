@@ -30,8 +30,9 @@ import {
   parseCatalogCache,
   serializeCatalogCache,
 } from "./catalog-kernel";
+import { storageKeys } from "@/lib/storage-keys";
 
-const CACHE_KEY = "s3ip:gallery:photos";
+const CACHE_KEY = storageKeys.galleryPhotos;
 
 const catalogCommandSchema = z.discriminatedUnion("type", [
   z.object({

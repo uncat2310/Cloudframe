@@ -13,10 +13,6 @@ import {
 } from "@/modules/image-storage";
 import { createImageStorage } from "@/modules/self-host/create-image-storage";
 import {
-  migrateV2ToV3,
-  migrateV2ToV3OnUnmount,
-} from "../schemas/settings/migrations/v2-v3";
-import {
   SETTINGS_STORE_VERSION,
   getDefaultStoredSettings,
   optionsSchema,
@@ -27,10 +23,11 @@ import {
 } from "../schemas/settings";
 import { migrateFromV1 } from "../schemas/settings/migrations/v1-v3";
 import { storedSettingsIntoSyncFormat } from "../schemas/settings/format";
+import { storageKeys } from "@/lib/storage-keys";
 
 enableMapSet();
 
-const SETTINGS_STORE_KEY = "s3ip:profiles-list";
+const SETTINGS_STORE_KEY = storageKeys.profiles;
 const profileImportSchema = z.object({
   name: z.string(),
   data: optionsSchemaForLoad,
@@ -210,7 +207,7 @@ export function createSettings({
   const { valueAtom: persistedProfiles } = atomWithStorageMigration(
     SETTINGS_STORE_KEY,
     {
-      initialFn: migrateV2ToV3,
+      initialFn: getDefaultStoredSettings,
       schema: storedSettingsSchema,
       version: SETTINGS_STORE_VERSION,
       migrate: (stored, oldVersionNumber) => {
@@ -224,7 +221,6 @@ export function createSettings({
       storage: persistence,
     },
   );
-  persistedProfiles.onMount = () => () => migrateV2ToV3OnUnmount();
 
   const accessState = atom({
     status: idleAccess as

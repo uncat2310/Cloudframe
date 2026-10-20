@@ -3,7 +3,7 @@
 // generated .output/server/wrangler.json, which is what gets deployed.
 // Nitro parses this as JSON with comments: no trailing commas.
 {
-  "name": "s3-image-port",
+  "name": "cloudframe",
   "compatibility_date": "2025-10-01",
   "compatibility_flags": ["nodejs_compat"],
   // The panel is served from a custom domain (pic.as4837.de), whose WAF
@@ -35,6 +35,6 @@
     "R2_PUBLIC_URL": "https://i.as4837.de"
   }
   // The login password is a secret, never put it here:
-  //   npx wrangler@4 secret put S3IP_PASSWORD -c .output/server/wrangler.json
-  // or Dashboard -> Workers -> s3-image-port -> Settings -> Variables and Secrets.
+  //   npx wrangler@4 secret put CLOUDFRAME_PASSWORD -c .output/server/wrangler.json
+  // or Dashboard -> Workers -> cloudframe -> Settings -> Variables and Secrets.
 }

@@ -13,6 +13,7 @@ import {
 import {
   isCloudflareWorker,
   loadSelfHostConfig,
+  readSetting,
   publicStorageSchema,
   toPublicStorage,
   workerBinding,
@@ -98,7 +99,7 @@ const loginRateLimitByIp = createRatelimitMiddleware({
   key: ({ context }) =>
     `ip:${getClientIp(context.reqHeaders, {
       onWorker: isCloudflareWorker(),
-      trustedHeader: process.env.S3IP_CLIENT_IP_HEADER,
+      trustedHeader: readSetting("CLIENT_IP_HEADER"),
     })}`,
 });
 

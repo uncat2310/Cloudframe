@@ -21,6 +21,8 @@
 - **Manage**: rename, delete, download
 - **Interface**: English / 中文, light and dark themes
 
+Key template placeholders, compression and gallery options are described in the [settings reference](docs/settings.en.md).
+
 ## Deploy
 
 Pick one of three options; step-by-step instructions are in **[selfhost/README.md](selfhost/README.md)** (in Chinese).
@@ -36,7 +38,7 @@ On Workers, in short (section 2 of the guide has every click):
 1. Create an R2 bucket and enable public access (custom domain or r2.dev);
 2. Fork this repo and set the bucket name and public URL in `apps/web/wrangler.jsonc`; without a domain of your own, set `workers_dev` to `true`;
 3. Cloudflare dashboard → Workers & Pages → import the Git repository, with the build and deploy commands from the guide;
-4. Add `S3IP_PASSWORD` (login password) and `S3IP_SESSION_SECRET` (a long random string) under the Worker's Variables and Secrets, **both as secrets**;
+4. Add `CLOUDFRAME_PASSWORD` (login password) and `CLOUDFRAME_SESSION_SECRET` (a long random string) under the Worker's Variables and Secrets, **both as secrets**;
 5. Attach your own domain under the Worker's Domains (e.g. `pic.example.com`) and add a login rate-limiting rule to it;
 6. Open your domain and sign in.
 
@@ -55,9 +57,9 @@ Requires Node.js 22 and pnpm (`corepack enable`):
 
 ```bash
 pnpm install
-pnpm --filter s3-image-port-web dev     # dev server
-pnpm --filter s3-image-port-web test    # tests (run in Chromium)
-pnpm --filter s3-image-port-web lint
+pnpm --filter cloudframe-web dev     # dev server
+pnpm --filter cloudframe-web test    # tests (run in Chromium)
+pnpm --filter cloudframe-web lint
 ```
 
 ## Contributors
@@ -71,4 +73,4 @@ The author and contributors of the original S3 Image Port are credited below.
 
 Cloudframe is built on **[S3 Image Port](https://github.com/yy4382/s3-image-port)** by [yy4382](https://github.com/yy4382) (synced past upstream v1.8.5). Uploading, the gallery, compression, HEIC and Live Photo support all come from the original project. Thank you!
 
-Compared with it, Cloudframe only keeps the self-hosted mode and targets Cloudflare R2: browser-side S3 settings, multiple profiles, profile sync and the bundled docs site are removed, and login and uploads are hardened. Help links for settings such as key templates still point to the original project's docs.
+Compared with it, Cloudframe only keeps the self-hosted mode and targets Cloudflare R2: browser-side S3 settings, multiple profiles, profile sync and the bundled docs site are removed, and login and uploads are hardened. Settings help now links to this repository's own docs.
