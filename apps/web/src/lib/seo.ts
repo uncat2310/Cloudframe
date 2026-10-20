@@ -4,11 +4,10 @@ import type {
   MetaHTMLAttributes,
 } from "react";
 
-const SITE_URL = "https://imageport.app";
-const DEFAULT_TITLE = "S3 Image Port";
-const DEFAULT_DESCRIPTION = "Manage your images in S3";
+const DEFAULT_TITLE = "Cloudframe";
+const DEFAULT_DESCRIPTION = "A private image host on Cloudflare R2";
 const OG_IMAGE_PATH = "/og.png";
-const OG_IMAGE_ALT = "S3 Image Port Site Preview";
+const OG_IMAGE_ALT = "Cloudframe";
 
 export type HeadOptions = {
   title?: string;
@@ -23,8 +22,6 @@ export function createHeadTags({
   locale,
   includeFavicon = false,
 }: HeadOptions = {}) {
-  const imageUrl = new URL(OG_IMAGE_PATH, SITE_URL).toString();
-
   const meta: Array<
     DetailedHTMLProps<MetaHTMLAttributes<HTMLMetaElement>, HTMLMetaElement>
   > = [
@@ -33,14 +30,14 @@ export function createHeadTags({
     { property: "og:type", content: "website" },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
-    { property: "og:image", content: imageUrl },
+    { property: "og:image", content: OG_IMAGE_PATH },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     { property: "og:image:alt", content: OG_IMAGE_ALT },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
-    { name: "twitter:image", content: imageUrl },
+    { name: "twitter:image", content: OG_IMAGE_PATH },
   ];
 
   if (locale) {
@@ -58,7 +55,6 @@ export function createHeadTags({
 }
 
 export const seoDefaults = {
-  siteUrl: SITE_URL,
   defaultTitle: DEFAULT_TITLE,
   defaultDescription: DEFAULT_DESCRIPTION,
 } as const;

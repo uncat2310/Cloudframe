@@ -1,6 +1,6 @@
 # 部署指南：Cloudflare R2 开箱即用
 
-这是 S3 Image Port 的个人自用版本：
+这是 Cloudframe 的部署说明。Cloudframe 基于 [yy4382/s3-image-port](https://github.com/yy4382/s3-image-port) 改造：
 
 - **只需登录密码**：R2 的访问权限保存在服务器端，浏览器打开后输入密码即可使用，换设备、换浏览器都不用再填参数。
 - **不需要配置 CORS**：浏览器只访问面板自己的域名，由服务器代为访问 R2；HEIC 图片和 Live Photo 也经由服务器转发。

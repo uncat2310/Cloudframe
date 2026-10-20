@@ -4,7 +4,7 @@ status: accepted
 
 # Keep ordinary client state in Jotai
 
-S3 Image Port needs explicit workflow lifecycles for pending uploads, but its settings, image catalog, gallery view, sync workflow, and caches are locally authoritative or derived state that already have a working Jotai reactive graph. We will keep Jotai as the ordinary client-state model and use XState through `jotai-xstate` only for the upload queue and pending-upload workflows. This ADR supersedes [ADR-0002](./0002-use-xstate-actors-for-client-state.md); [ADR-0001](./0001-use-xstate-for-upload-workflows.md) remains accepted.
+Cloudframe needs explicit workflow lifecycles for pending uploads, but its settings, image catalog, gallery view, sync workflow, and caches are locally authoritative or derived state that already have a working Jotai reactive graph. We will keep Jotai as the ordinary client-state model and use XState through `jotai-xstate` only for the upload queue and pending-upload workflows. This ADR supersedes [ADR-0002](./0002-use-xstate-actors-for-client-state.md); [ADR-0001](./0001-use-xstate-for-upload-workflows.md) remains accepted.
 
 ## Decision
 

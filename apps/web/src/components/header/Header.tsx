@@ -35,9 +35,7 @@ const Header: React.FC = () => {
             width={24}
             height={24}
           />
-          <span className="text-xl font-bold hidden md:block">
-            S3 Image Port
-          </span>
+          <span className="text-xl font-bold hidden md:block">Cloudframe</span>
         </Link>
 
         <div className="flex space-x-4 font-semibold flex-1 justify-center">
@@ -73,7 +71,7 @@ const Header: React.FC = () => {
 
           <a
             target="_blank"
-            href="https://github.com/yy4382/s3-image-port"
+            href="https://github.com/uncat2310/s3-image-port"
             className={buttonVariants({ size: "icon", variant: "ghost" })}
             aria-label="GitHub Repository"
           >
