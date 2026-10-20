@@ -5,10 +5,10 @@ export function Footer() {
     <div className="container mx-auto px-4 text-muted-foreground mb-8 flex flex-col gap-4 text-sm">
       <Separator />
       <div className="flex justify-between items-center">
-        <div>© {new Date().getFullYear()} S3 Image Port</div>
+        <div>© {new Date().getFullYear()} Cloudframe</div>
         <div className="flex items-center gap-4">
           <a
-            href="https://github.com/yy4382/s3-image-port"
+            href="https://github.com/uncat2310/s3-image-port"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors duration-300"
@@ -16,7 +16,7 @@ export function Footer() {
             GitHub
           </a>
           <a
-            href="https://yfi.moe"
+            href="https://github.com/uncat2310"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors duration-300"

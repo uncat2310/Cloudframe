@@ -6,7 +6,7 @@ import { z } from "zod";
 export const Route = createFileRoute("/$locale/photo")({
   head: () =>
     createHeadTags({
-      title: "Photo | S3 Image Port",
+      title: "Photo | Cloudframe",
       description: "Inspect image metadata and preview individual assets.",
     }),
   component: RouteComponent,

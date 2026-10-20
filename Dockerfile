@@ -1,4 +1,4 @@
-# Self-hosted Cloudflare R2 build of S3 Image Port. See selfhost/README.md.
+# Self-hosted Cloudflare R2 build of Cloudframe. See selfhost/README.md.
 FROM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable
