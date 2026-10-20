@@ -13,10 +13,6 @@ import {
 } from "@/modules/image-storage";
 import { createImageStorage } from "@/modules/self-host/create-image-storage";
 import {
-  migrateV2ToV3,
-  migrateV2ToV3OnUnmount,
-} from "../schemas/settings/migrations/v2-v3";
-import {
   SETTINGS_STORE_VERSION,
   getDefaultStoredSettings,
   optionsSchema,
@@ -211,7 +207,7 @@ export function createSettings({
   const { valueAtom: persistedProfiles } = atomWithStorageMigration(
     SETTINGS_STORE_KEY,
     {
-      initialFn: migrateV2ToV3,
+      initialFn: getDefaultStoredSettings,
       schema: storedSettingsSchema,
       version: SETTINGS_STORE_VERSION,
       migrate: (stored, oldVersionNumber) => {
@@ -225,7 +221,6 @@ export function createSettings({
       storage: persistence,
     },
   );
-  persistedProfiles.onMount = () => () => migrateV2ToV3OnUnmount();
 
   const accessState = atom({
     status: idleAccess as

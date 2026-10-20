@@ -21,6 +21,8 @@
 - **管理**：重命名、删除、下载
 - **界面**：中文 / English，浅色 / 深色主题
 
+路径模板的占位符、压缩和画廊选项见[设置说明](docs/settings.md)。
+
 ## 部署
 
 三种方式任选其一，详细步骤见 **[部署指南 selfhost/README.md](selfhost/README.md)**。
@@ -73,4 +75,4 @@ pnpm --filter cloudframe-web lint
 
 Cloudframe 基于 [yy4382](https://github.com/yy4382) 的 **[S3 Image Port](https://github.com/yy4382/s3-image-port)** 改造（同步至 v1.8.5 之后的上游代码）。上传、画廊、压缩、HEIC 和 Live Photo 等核心功能都来自原项目，非常感谢原作者的工作。
 
-与原项目的区别：原项目是一个公共面板，S3 参数在浏览器里填写并保存在本地，支持多配置和同步。Cloudframe 只保留自部署模式，专门适配 Cloudflare R2，移除了浏览器端 S3 配置、多配置切换、配置同步和内置文档站，并加强了登录与上传的安全措施。路径模板等设置的说明仍链接到原项目的在线文档。
+与原项目的区别：原项目是一个公共面板，S3 参数在浏览器里填写并保存在本地，支持多配置和同步。Cloudframe 只保留自部署模式，专门适配 Cloudflare R2，移除了浏览器端 S3 配置、多配置切换、配置同步和内置文档站，并加强了登录与上传的安全措施。设置说明也改为本仓库自己的文档。

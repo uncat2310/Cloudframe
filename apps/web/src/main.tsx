@@ -3,13 +3,9 @@ import messages from "../messages/en.json";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
-import { migrateLegacyStorageKeys } from "./lib/storage-keys";
 
 // Create a new router instance
 export function getRouter() {
-  // Before any settings are read: carry over values saved under the
-  // pre-rename storage keys.
-  migrateLegacyStorageKeys();
   const router = createRouter({
     routeTree,
     scrollRestoration: true,

@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { useLocale, useTranslations } from "use-intl";
-import { upstreamDocsUrl } from "@/lib/docs-url";
+import { settingsDocsUrl } from "@/lib/docs-url";
 import { Badge } from "@/components/ui/badge";
 type KeyTemplateConsumerInputProps = KeyTemplateFieldInputProps & {
   presets: KeyTemplatePreset[];
@@ -41,11 +41,7 @@ export function KeyTemplateConsumerInput(props: KeyTemplateConsumerInputProps) {
         {t.rich("description", {
           more: (chunks) => (
             <a
-              href={upstreamDocsUrl(
-                locale,
-                "settings-reference",
-                "key-template",
-              )}
+              href={settingsDocsUrl(locale, "key-template")}
               target="_blank"
               rel="noreferrer"
               className="underline underline-offset-1"
