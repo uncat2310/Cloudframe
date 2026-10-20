@@ -13,6 +13,7 @@ import { useLocale, useTranslations } from "use-intl";
 import { CircleDotDashed } from "lucide-react";
 import { PhotoItemOverlay } from "./photo-item-overlay";
 import { PhotoImg } from "./photo-img";
+import { toThumbnailUrl } from "@/lib/self-host/thumbnail";
 
 export function PhotoItem({
   photo,
@@ -83,6 +84,7 @@ function PhotoDisplay({
           })}
           s3Key={s3Key}
           url={source}
+          thumbnailUrl={toThumbnailUrl(source)}
           setLoadingState={setLoadingState}
           width={size.width}
           height={size.height}
@@ -140,7 +142,9 @@ function PhotoDisplayError({
   s3Key: string;
   access: { source: string } | undefined;
 }) {
-  const [mime, setMime] = useState<string | undefined>(undefined);
+  const t = useTranslations("gallery.item.loadError");
+  // undefined while checking, null when the type couldn't be found.
+  const [mime, setMime] = useState<string | null | undefined>(undefined);
   const runCatalog = useSetAtom(imageCatalog.run);
   const mounted = useRef(false);
 
@@ -166,7 +170,7 @@ function PhotoDisplayError({
   useEffect(() => {
     let current = true;
     void handleRefresh().then((contentType) => {
-      if (current) setMime(contentType);
+      if (current) setMime(contentType ?? null);
     });
     return () => {
       current = false;
@@ -176,19 +180,25 @@ function PhotoDisplayError({
   return (
     <div className="size-full flex items-center justify-center border border-border bg-card">
       <div className="flex flex-col items-center justify-center gap-2">
-        <p>Photo Load error</p>
-        <p className="text-xs">Key: {s3Key}</p>
-        <p className="text-xs">Mime: {mime ?? "loading..."}</p>
+        <p>{t("title")}</p>
+        <p className="text-xs">{t("key", { key: s3Key })}</p>
+        <p className="text-xs">
+          {t("type", {
+            type:
+              mime === undefined ? t("checking") : (mime ?? t("unknownType")),
+          })}
+        </p>
         <div className="flex gap-2">
           <Button
             onClick={async () => {
+              setMime(undefined);
               const contentType = await handleRefresh();
-              if (mounted.current) setMime(contentType);
+              if (mounted.current) setMime(contentType ?? null);
             }}
             size="sm"
             disabled={!access}
           >
-            Refresh
+            {t("recheck")}
           </Button>
         </div>
       </div>

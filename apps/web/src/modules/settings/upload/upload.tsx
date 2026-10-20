@@ -23,7 +23,7 @@ function UploadSettings() {
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-            title="View documentation"
+            title={t("viewDocs")}
           >
             <span className="underline underline-offset-1">docs</span>
             <ExternalLink className="h-4 w-4" />

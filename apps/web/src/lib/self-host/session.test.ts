@@ -23,6 +23,7 @@ const config: SelfHostConfig = {
   password: "correct horse",
   sessionSecret: "secret",
   keyTemplate: undefined,
+  thumbnails: "off",
 };
 
 function requestWith(setCookie: string) {

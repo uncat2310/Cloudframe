@@ -12,6 +12,13 @@
   "workers_dev": false,
   // Branch previews would share the production bucket and password.
   "preview_urls": false,
+  // Page loads get the static SPA shell (index.html) straight from Workers
+  // static assets, which is free and doesn't count as a Worker request; only
+  // /api calls run the Worker. Nitro adds the binding and directory.
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
   // Keep variables added in the Cloudflare dashboard across deploys.
   "keep_vars": true,
   "r2_buckets": [
@@ -32,7 +39,12 @@
   ],
   "vars": {
     // TODO: the bucket's public URL (custom domain or r2.dev address)
-    "R2_PUBLIC_URL": "https://i.as4837.de"
+    "R2_PUBLIC_URL": "https://i.as4837.de",
+    // Shown on the storage settings page; keep in sync with bucket_name.
+    "R2_BUCKET": "img",
+    // Gallery thumbnails through Cloudflare Image Transformations, which must
+    // be enabled for the zone of R2_PUBLIC_URL. Use "off" to show originals.
+    "CLOUDFRAME_THUMBNAILS": "cloudflare"
   }
   // The login password is a secret, never put it here:
   //   npx wrangler@4 secret put CLOUDFRAME_PASSWORD -c .output/server/wrangler.json

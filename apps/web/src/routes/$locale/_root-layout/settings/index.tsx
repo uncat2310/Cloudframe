@@ -8,7 +8,7 @@ function RouteComponent() {
   return (
     <Navigate
       from="/$locale/settings"
-      to="/$locale/settings/s3"
+      to="/$locale/settings/storage"
       params={(prev) => ({ locale: prev.locale })}
     />
   );
