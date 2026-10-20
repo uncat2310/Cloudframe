@@ -38,7 +38,7 @@ describe("counted image storage", () => {
     });
     await storage.deleteStoredImages(["i/existing.webp"]);
     await storage.checkAccess({ origin: "https://app.example.com" });
-    persistence.setItem("s3ip:gallery:photos", "[]");
+    persistence.setItem("cloudframe:gallery:photos", "[]");
 
     expect(counted.calls).toEqual({
       createStorage: [settings],

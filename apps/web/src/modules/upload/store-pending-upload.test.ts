@@ -311,7 +311,7 @@ describe("store pending upload", () => {
     });
     const catalog = createImageCatalog({
       cacheStorage: new ControllableStorage({
-        "s3ip:gallery:photos": JSON.stringify([alpha]),
+        "cloudframe:gallery:photos": JSON.stringify([alpha]),
       }),
       createStorage: catalogStorage.createStorage,
     });

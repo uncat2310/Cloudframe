@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { type LocaleType, routing } from "@/i18n/routing";
+import { storageKeys } from "@/lib/storage-keys";
 
 /** @description Storage key for persisted locale preference */
-export const PERSISTED_LOCALE_KEY = "s3ip:locale";
+export const PERSISTED_LOCALE_KEY = storageKeys.locale;
 
 const localeSchema = z.enum(routing.locales);
 

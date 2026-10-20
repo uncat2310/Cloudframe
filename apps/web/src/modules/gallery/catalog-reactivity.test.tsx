@@ -180,7 +180,7 @@ afterEach(() => {
 
 describe("catalog React reactivity", () => {
   it("renders a cached image while target-authorized actions wait for a refresh", async () => {
-    localStorage.setItem("s3ip:gallery:photos", JSON.stringify([alpha]));
+    localStorage.setItem("cloudframe:gallery:photos", JSON.stringify([alpha]));
     const store = createStore();
     store.set(settings.storage, { type: "update", value: firstTarget });
     store.set(settings.gallery, { autoRefresh: false });

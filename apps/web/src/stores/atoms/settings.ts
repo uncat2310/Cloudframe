@@ -27,10 +27,11 @@ import {
 } from "../schemas/settings";
 import { migrateFromV1 } from "../schemas/settings/migrations/v1-v3";
 import { storedSettingsIntoSyncFormat } from "../schemas/settings/format";
+import { storageKeys } from "@/lib/storage-keys";
 
 enableMapSet();
 
-const SETTINGS_STORE_KEY = "s3ip:profiles-list";
+const SETTINGS_STORE_KEY = storageKeys.profiles;
 const profileImportSchema = z.object({
   name: z.string(),
   data: optionsSchemaForLoad,

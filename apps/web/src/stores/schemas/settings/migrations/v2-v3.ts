@@ -1,5 +1,6 @@
 import { z } from "zod";
 import * as v3Schema from "../v3";
+import { storageKeys } from "@/lib/storage-keys";
 
 function isBrowser() {
   return typeof window !== "undefined" && window.localStorage;
@@ -76,7 +77,7 @@ export function migrateV2ToV3OnUnmount() {
   if (!isBrowser()) {
     return;
   }
-  if (localStorage.getItem("s3ip:profiles-list")) {
+  if (localStorage.getItem(storageKeys.profiles)) {
     localStorage.removeItem("s3ip:options");
     localStorage.removeItem("s3ip:profile:profiles");
   }
