@@ -1,13 +1,17 @@
 import deepEqual from "fast-deep-equal";
-import type { SyncedSettings } from "@/lib/self-host/settings-store";
+import type {
+  StoredSettings,
+  SyncedSettings,
+} from "@/lib/self-host/settings-store";
 
 export type SettingsSyncDeps = {
   /** The browser's current upload and gallery settings. */
   readLocal: () => SyncedSettings;
   writeLocal: (value: SyncedSettings) => void;
   /** The server's copy, or `null` when none has been saved yet. */
-  fetchRemote: () => Promise<SyncedSettings | null>;
-  pushRemote: (value: SyncedSettings) => Promise<void>;
+  fetchRemote: () => Promise<StoredSettings | null>;
+  /** Saves to the server and returns the server time of the save. */
+  pushRemote: (value: SyncedSettings) => Promise<number>;
   /** Quiet period after the last change before saving. */
   debounceMs?: number;
   /** Delay before retrying a failed save. */
@@ -22,7 +26,9 @@ export type SettingsSyncDeps = {
  * - Local changes are saved after a quiet period, so a burst of edits costs
  *   one write.
  * - `refresh()` (when the tab comes back) picks up changes made elsewhere,
- *   but never overwrites local changes that haven't been saved yet.
+ *   but never overwrites local changes that haven't been saved yet, and
+ *   ignores a copy older than the newest one seen (Workers KV can briefly
+ *   serve a stale value after a write).
  */
 export function createSettingsSync({
   readLocal,
@@ -37,8 +43,10 @@ export function createSettingsSync({
    * `null` while the server has no copy yet.
    */
   let synced: SyncedSettings | null | undefined;
+  /** Server time of `synced`; older remote copies are stale. */
+  let syncedAt = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let pushing: Promise<void> | undefined;
+  let pushing: Promise<number> | undefined;
   let stopped = false;
 
   const isDirty = () =>
@@ -61,7 +69,7 @@ export function createSettingsSync({
     const value = readLocal();
     pushing = pushRemote(value);
     try {
-      await pushing;
+      syncedAt = Math.max(syncedAt, await pushing);
       synced = value;
     } catch {
       if (!stopped) schedule(retryMs);
@@ -84,9 +92,10 @@ export function createSettingsSync({
         await push();
         return;
       }
-      synced = remote;
+      synced = remote.value;
+      syncedAt = remote.updatedAt;
       if (deepEqual(readLocal(), before)) {
-        if (!deepEqual(before, remote)) writeLocal(remote);
+        if (!deepEqual(before, remote.value)) writeLocal(remote.value);
       } else {
         // Edited while the server's copy was loading: keep the edit.
         schedule(debounceMs);
@@ -102,9 +111,11 @@ export function createSettingsSync({
       if (stopped || synced === undefined || isDirty() || pushing) return;
       const remote = await fetchRemote();
       if (stopped || remote === null || isDirty() || pushing) return;
-      if (!deepEqual(remote, synced)) {
-        synced = remote;
-        writeLocal(remote);
+      if (remote.updatedAt <= syncedAt) return;
+      syncedAt = remote.updatedAt;
+      if (!deepEqual(remote.value, synced)) {
+        synced = remote.value;
+        writeLocal(remote.value);
       }
     },
     /** Save a pending change now (e.g. when the tab is being hidden). */

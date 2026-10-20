@@ -206,21 +206,32 @@ const keyInput = z.object({ key: storageKeySchema });
 const settingsRouter = {
   /** The shared settings, or `null` until a browser first saves them. */
   get: storageOs
-    .output(z.object({ value: syncedSettingsSchema.nullable() }))
+    .output(
+      z.object({
+        value: syncedSettingsSchema.nullable(),
+        updatedAt: z.number(),
+      }),
+    )
     .handler(async ({ errors }) => {
       const store = getSettingsStore();
       if (!store) throw errors.SETTINGS_SYNC_UNAVAILABLE();
-      return { value: await store.read() };
+      const stored = await store.read();
+      return {
+        value: stored?.value ?? null,
+        updatedAt: stored?.updatedAt ?? 0,
+      };
     }),
   put: storageOs
     .input(z.object({ value: syncedSettingsSchema }))
+    .output(z.object({ updatedAt: z.number() }))
     .handler(async ({ input, errors }) => {
       const store = getSettingsStore();
       if (!store) throw errors.SETTINGS_SYNC_UNAVAILABLE();
       if (JSON.stringify(input.value).length > MAX_SETTINGS_BYTES) {
         throw errors.SETTINGS_TOO_LARGE();
       }
-      await store.write(input.value);
+      const { updatedAt } = await store.write(input.value);
+      return { updatedAt };
     }),
 };
 
