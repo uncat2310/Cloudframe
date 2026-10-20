@@ -19,6 +19,11 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
+  // Workers Logs (Dashboard -> the Worker -> Observability), so failures can
+  // be looked into. The free plan keeps them for a few days.
+  "observability": {
+    "enabled": true
+  },
   // Keep variables added in the Cloudflare dashboard across deploys.
   "keep_vars": true,
   "r2_buckets": [

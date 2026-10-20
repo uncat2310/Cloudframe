@@ -44,7 +44,8 @@
       "autoRefresh": "自动刷新",
       "autoRefreshDesc": "每次加载画廊时自动刷新。如果启用，会产生更多的列表请求，可能会小幅增加 R2 费用。"
     },
-    "viewDocs": "查看文档"
+    "viewDocs": "查看文档",
+    "trash": "回收站"
   },
   "gallery": {
     "control": {
@@ -60,7 +61,7 @@
       "selectedUrls": "所选 URL",
       "deleteConfirm": {
         "title": "删除确认",
-        "description": "确定要删除这些项目吗？",
+        "description": "删除后会移到回收站，30 天内可以在「设置 → 回收站」中恢复。",
         "cancel": "取消",
         "delete": "删除"
       }
@@ -143,7 +144,7 @@
         },
         "deleteModal": {
           "title": "删除确认",
-          "description": "您确定要删除此项目吗？",
+          "description": "删除后会移到回收站，30 天内可以在「设置 → 回收站」中恢复。",
           "cancel": "取消",
           "delete": "删除"
         },
@@ -247,5 +248,27 @@
     "thumbnails": "画廊缩略图",
     "thumbnailsOn": "Cloudflare 图片变换",
     "thumbnailsOff": "未开启（显示原图）"
+  },
+  "trash": {
+    "title": "回收站",
+    "description": "在面板里删除的图片会先移到这里，删除 30 天后自动彻底清除。",
+    "loading": "加载中…",
+    "loadFailed": "无法加载回收站：{message}",
+    "empty": "回收站是空的。",
+    "count": "共 {count} 项",
+    "restore": "恢复",
+    "restoreAll": "全部恢复",
+    "deleteForever": "永久删除",
+    "emptyTrash": "清空回收站",
+    "confirmTitle": "永久删除",
+    "confirmDescription": "这些文件将被彻底删除，无法恢复。",
+    "confirmDelete": "永久删除",
+    "deletedAt": "删除于 {time}",
+    "daysLeft": "还剩 {days} 天",
+    "restored": "已恢复 {count} 项",
+    "conflicts": "{count} 项未恢复：原位置已有同名文件",
+    "failed": "{count} 项恢复失败",
+    "purged": "已永久删除 {count} 项",
+    "purgeFailed": "永久删除失败：{message}"
   }
 }

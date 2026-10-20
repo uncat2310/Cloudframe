@@ -64,6 +64,17 @@ function SettingPageSwitcher() {
       >
         {t("gallery.title")}
       </Link>
+      <Link
+        from="/$locale/settings"
+        to="/$locale/settings/trash"
+        params={(prev) => ({ locale: prev.locale })}
+        className={cn(
+          buttonVariants({ variant: "ghost" }),
+          "justify-start data-[status=active]:bg-muted data-[status=active]:hover:bg-accent",
+        )}
+      >
+        {t("trash")}
+      </Link>
     </div>
   );
 }

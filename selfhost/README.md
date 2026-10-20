@@ -131,7 +131,29 @@ Worker → 域 → 添加域名 → 选择你托管在 Cloudflare 上的域名 �
 - KV 免费额度是每天 10 万次读、1,000 次写，个人使用用不完。
 - 语言和主题不同步，仍然跟随各自的浏览器。
 
-### 2.8 另一种方式：在电脑上用命令行部署
+### 2.8 回收站（推荐）
+
+在面板里删除的图片不会立刻消失，而是移到存储桶的 `.trash/` 目录（保留原路径），可以在「设置 → 回收站」里恢复或永久删除。还需要两条 Cloudflare 规则：
+
+1. **30 天后自动清除**：R2 → 你的存储桶 → 设置 → 对象生命周期规则 → 添加：
+   - 规则名称随意，例如 `Cloudframe trash purge`；
+   - 前缀填 **`.trash/`**（一定要填，留空会作用于整个存储桶，30 天后删除所有图片）；
+   - 勾选「在此时间之后删除上传的对象」，填 `30` 天，保存。
+2. **禁止公开访问回收站**（需要自定义域名）：存储桶是公开的，回收站里的文件本来也能通过公开地址打开。进入公开地址所在的域名 → 安全性 → 安全规则 → 自定义规则 → 创建规则，点「编辑表达式」填入（把域名换成你的）：
+
+   ```
+   (http.host eq "img.example.com" and http.request.uri.path contains "/.trash/")
+   ```
+
+   操作选「阻止」，部署。面板里的回收站预览经由 Worker 读取，不受影响。
+
+说明：一次删除很多图片时，浏览器会自动分批（每批 10 张），以免超出 Workers 免费版每个请求 50 次子请求的限制。
+
+### 2.9 查看日志
+
+`wrangler.jsonc` 开启了 Workers 日志（`observability`）。面板出问题时，可以在 Cloudflare 控制台 → 这个 Worker → Observability 里查看最近几天的请求和报错。
+
+### 2.10 另一种方式：在电脑上用命令行部署
 
 需要 Node.js 22 和 pnpm（`corepack enable` 即可）：
 
@@ -147,7 +169,7 @@ npx wrangler@4 secret put CLOUDFRAME_SESSION_SECRET -c .output/server/wrangler.j
 
 使用自定义域名时，部署后同样按 2.4 在后台绑定域名。
 
-### 2.9 Workers 上的可选变量
+### 2.11 Workers 上的可选变量
 
 在 Worker 设置 → 运行时变量和密钥里添加（`wrangler.jsonc` 开启了 `keep_vars`，重新部署不会清掉它们）：
 
@@ -161,7 +183,7 @@ npx wrangler@4 secret put CLOUDFRAME_SESSION_SECRET -c .output/server/wrangler.j
 
 `wrangler.jsonc` 里的 `LOGIN_RATE_LIMITER` 是 Cloudflare 的限流绑定，用来在 Worker 实例之间共享登录次数（近似计数），不需要额外设置。分支预览地址（`preview_urls`）默认关闭，因为预览版本会使用和正式版相同的存储桶与密码。
 
-### 2.10 免费额度
+### 2.12 免费额度
 
 个人图床一般用不完：Workers 免费版每天 10 万次请求，每次请求 10 ms CPU 时间（等待 R2 的时间不计）；R2 每月免费 10 GB 存储、100 万次写类操作、1000 万次读类操作，流量免费。
 

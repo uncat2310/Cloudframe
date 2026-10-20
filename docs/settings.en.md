@@ -76,6 +76,8 @@ In the gallery you can also:
 - **Act on several images**: select the current page (Ctrl+A), copy the selected URLs, delete in bulk.
 - **Act on one image**: open, view info, copy URL or Markdown, download, rename, delete.
 
+Deleted images go to the trash first: Settings → Trash restores them or deletes them forever, and they are purged 30 days after deletion (with the cleanup rule from section 2.8 of the deployment guide). Restoring never overwrites a file with the same name; deal with that file first.
+
 With `CLOUDFRAME_THUMBNAILS=cloudflare` on the server, gallery tiles show thumbnails (at most 800px on the longer side); opening an image, copying its link and downloading use the original, and a thumbnail that fails to load falls back to the original.
 
 To show only files under one prefix, set `R2_INCLUDE_PATH` on the server (e.g. `i/`); see the [deployment guide](../selfhost/README.md).

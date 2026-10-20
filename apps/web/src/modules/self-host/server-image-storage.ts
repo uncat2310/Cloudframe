@@ -1,5 +1,6 @@
 import { ORPCError } from "@orpc/client";
 import { client } from "@/lib/orpc/client";
+import { TRASH_BATCH_SIZE } from "@/lib/self-host/policy";
 import type {
   ImageStorage,
   ImageStorageFailureResult,
@@ -46,7 +47,22 @@ export function createServerImageStorage(): ImageStorage {
         }),
       ),
     deleteStoredImages: (keys) =>
-      call(() => storage.delete({ keys: [...keys] })),
+      call(async () => {
+        // Deleting moves each image to the trash, three R2 calls apiece; keep
+        // every request within the Workers free plan's subrequest limit.
+        const deletedKeys: string[] = [];
+        for (let start = 0; start < keys.length; start += TRASH_BATCH_SIZE) {
+          const batch = keys.slice(start, start + TRASH_BATCH_SIZE);
+          const result = await storage.delete({ keys: batch });
+          if (!result.ok) {
+            return deletedKeys.length > 0
+              ? { ok: true as const, value: { deletedKeys } }
+              : result;
+          }
+          deletedKeys.push(...result.value.deletedKeys);
+        }
+        return { ok: true as const, value: { deletedKeys } };
+      }),
     renameStoredImage: (input) => call(() => storage.rename(input)),
     downloadStoredImage: (key) => call(() => storage.download({ key })),
     probeStoredImage: (key) => call(() => storage.probe({ key })),

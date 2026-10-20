@@ -36,3 +36,30 @@ export function isImageOrVideoType(
     (contentType.startsWith("image/") || contentType.startsWith("video/"))
   );
 }
+
+/**
+ * Deleting from the panel moves an image under this prefix (keeping its
+ * path), where it can be restored; a bucket lifecycle rule purges it after
+ * 30 days. The gallery never lists these keys.
+ */
+export const TRASH_PREFIX = ".trash/";
+
+export function isTrashKey(key: string) {
+  return key.startsWith(TRASH_PREFIX);
+}
+
+export function toTrashKey(key: string) {
+  return TRASH_PREFIX + key;
+}
+
+/** The key a trashed image had before it was deleted. */
+export function fromTrashKey(trashKey: string) {
+  return isTrashKey(trashKey) ? trashKey.slice(TRASH_PREFIX.length) : undefined;
+}
+
+/**
+ * Keys per delete/restore request. Moving an image costs three R2 calls
+ * (read, write, delete), and the Workers free plan allows 50 subrequests per
+ * request, so the browser sends larger selections in batches of this size.
+ */
+export const TRASH_BATCH_SIZE = 10;
