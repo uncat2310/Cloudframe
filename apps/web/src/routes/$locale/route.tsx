@@ -14,11 +14,7 @@ export const Route = createFileRoute("/$locale")({
       throw new Error("Unknown error");
     }
   },
-  head: ({ params }) =>
-    createHeadTags({
-      description: "Manage and view your S3 images.",
-      locale: params.locale,
-    }),
+  head: ({ params }) => createHeadTags({ locale: params.locale }),
   component: RouteComponent,
   notFoundComponent: NotFoundComponent,
 });
