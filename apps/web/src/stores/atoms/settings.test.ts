@@ -3,7 +3,6 @@ import { renderHook } from "vitest-browser-react";
 import { Provider, useAtomValue, useSetAtom } from "jotai";
 import { produce } from "immer";
 
-import * as v3Schema from "../schemas/settings/v3";
 import { migrateFromV1 } from "../schemas/settings/migrations/v1-v3";
 import { getDefaultOptions } from "../schemas/settings";
 import { settings } from "./settings";
@@ -28,7 +27,7 @@ function currentOptions(
 describe("persisted settings profiles", () => {
   it("loads the existing versioned envelope without rewriting its shape", async () => {
     localStorage.setItem(
-      "s3ip:profiles-list",
+      "cloudframe:profiles-list",
       JSON.stringify({
         data: {
           list: [
@@ -63,7 +62,7 @@ describe("persisted settings profiles", () => {
     ["unknown version", { version: 999, data: "random" }],
   ])("uses defaults for %s storage", async (_name, stored) => {
     if (stored !== undefined) {
-      localStorage.setItem("s3ip:profiles-list", JSON.stringify(stored));
+      localStorage.setItem("cloudframe:profiles-list", JSON.stringify(stored));
     }
     const { result } = await renderHook(useSettingsTestSeam, {
       wrapper: Provider,
@@ -71,99 +70,6 @@ describe("persisted settings profiles", () => {
     expect(currentOptions(result.current.profiles)).toEqual(
       getDefaultOptions(),
     );
-  });
-});
-
-describe("v2 to v3 migration", () => {
-  function seedLegacy(options: unknown, profiles?: unknown) {
-    localStorage.setItem(
-      "s3ip:options",
-      JSON.stringify({ version: 2, data: options }),
-    );
-    if (profiles !== undefined) {
-      localStorage.setItem("s3ip:profile:profiles", JSON.stringify(profiles));
-    }
-  }
-
-  it("preserves legacy profile ordering and current options", async () => {
-    seedLegacy(
-      produce(v3Schema.getDefaultOptions(), (draft) => {
-        draft.s3.endpoint = "https://options.test";
-      }),
-      [
-        [
-          "Default",
-          produce(v3Schema.getDefaultOptions(), (draft) => {
-            draft.s3.endpoint = "https://profile0.test";
-          }),
-        ],
-        ["Default1", "CURRENT"],
-      ],
-    );
-    const { result } = await renderHook(useSettingsTestSeam, {
-      wrapper: Provider,
-    });
-    expect(result.current.profiles.list[0][1].s3.endpoint).toBe(
-      "https://profile0.test",
-    );
-    expect(result.current.profiles.list[1][1].s3.endpoint).toBe(
-      "https://options.test",
-    );
-  });
-
-  it("deletes legacy keys after the mounted atom is disposed", async () => {
-    seedLegacy(v3Schema.getDefaultOptions(), [
-      ["Default", v3Schema.getDefaultOptions()],
-    ]);
-    const { result, act, unmount } = await renderHook(useSettingsTestSeam, {
-      wrapper: Provider,
-    });
-    await act(() =>
-      result.current.updateStorage({
-        type: "update",
-        value: (raw) => ({ ...raw, endpoint: "https://profile.test" }),
-      }),
-    );
-    await unmount();
-    expect(localStorage.getItem("s3ip:profiles-list")).not.toBeNull();
-    expect(localStorage.getItem("s3ip:options")).toBeNull();
-    expect(localStorage.getItem("s3ip:profile:profiles")).toBeNull();
-  });
-
-  it("falls back for corrupted legacy options", async () => {
-    localStorage.setItem("s3ip:options", JSON.stringify({ random: "thing" }));
-    const { result } = await renderHook(useSettingsTestSeam, {
-      wrapper: Provider,
-    });
-    expect(result.current.profiles.list[0][1]).toEqual(
-      v3Schema.getDefaultOptions(),
-    );
-  });
-
-  it("migrates options when no profile list exists", async () => {
-    seedLegacy(
-      produce(v3Schema.getDefaultOptions(), (draft) => {
-        draft.s3.endpoint = "https://options.test";
-      }),
-    );
-    const { result } = await renderHook(useSettingsTestSeam, {
-      wrapper: Provider,
-    });
-    expect(result.current.profiles.list).toHaveLength(1);
-    expect(result.current.profiles.list[0][1].s3.endpoint).toBe(
-      "https://options.test",
-    );
-  });
-
-  it("ignores a corrupted legacy profile list", async () => {
-    const options = produce(v3Schema.getDefaultOptions(), (draft) => {
-      draft.s3.endpoint = "https://options.test";
-    });
-    seedLegacy(options, { random: "thing" });
-    const { result } = await renderHook(useSettingsTestSeam, {
-      wrapper: Provider,
-    });
-    expect(result.current.profiles.list[0][1]).toEqual(options);
   });
 });
 

@@ -6,10 +6,9 @@ import {
   getDefaultStoredSettings,
   storedSettingsSchema,
 } from ".";
-import { migrateV2ToV3 } from "./migrations/v2-v3";
 
 const migrateRawData = createStorageMigration({
-  initialFn: migrateV2ToV3,
+  initialFn: getDefaultStoredSettings,
   schema: storedSettingsSchema,
   version: SETTINGS_STORE_VERSION,
   migrate: () => getDefaultStoredSettings(),

@@ -199,7 +199,7 @@
     "notConfiguredTitle": "Server is not configured",
     "notConfiguredDesc": "Set the following environment variables on the server and restart it:",
     "loginTitle": "Sign in",
-    "loginDesc": "Enter the access password set in S3IP_PASSWORD.",
+    "loginDesc": "Enter the access password set in CLOUDFRAME_PASSWORD.",
     "password": "Password",
     "login": "Sign in",
     "wrongPassword": "Wrong password",

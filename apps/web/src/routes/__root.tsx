@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createUploadQueue } from "@/modules/upload/upload-queue";
+import { storageKeys } from "@/lib/storage-keys";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -65,7 +66,7 @@ function RootComponent() {
               defaultTheme="system"
               enableSystem
               disableTransitionOnChange
-              storageKey="s3ip:root:theme"
+              storageKey={storageKeys.theme}
             >
               <QueryClientProvider client={queryClient}>
                 <Outlet />

@@ -6,7 +6,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
 RUN HUSKY=0 pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm --filter s3-image-port-web build
+RUN pnpm --filter cloudframe-web build
 
 FROM node:22-alpine
 WORKDIR /app

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/field";
 import { Switch } from "@/components/animate-ui/components/base/switch";
 import { useAtom } from "jotai";
-import { upstreamDocsUrl } from "@/lib/docs-url";
+import { settingsDocsUrl } from "@/lib/docs-url";
 
 const autoRefreshAtom = focusAtom(settings.gallery, (optic) =>
   optic.prop("autoRefresh"),
@@ -27,11 +27,7 @@ export function GallerySettings() {
         <div className="flex items-center gap-2 justify-between">
           <h2 className="text-2xl font-bold">{t("title")}</h2>
           <a
-            href={upstreamDocsUrl(
-              locale,
-              "settings-reference",
-              "gallery-settings",
-            )}
+            href={settingsDocsUrl(locale, "gallery-settings")}
             target="_blank"
             rel="noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"

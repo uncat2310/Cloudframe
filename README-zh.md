@@ -21,6 +21,8 @@
 - **管理**：重命名、删除、下载
 - **界面**：中文 / English，浅色 / 深色主题
 
+路径模板的占位符、压缩和画廊选项见[设置说明](docs/settings.md)。
+
 ## 部署
 
 三种方式任选其一，详细步骤见 **[部署指南 selfhost/README.md](selfhost/README.md)**。
@@ -36,7 +38,7 @@
 1. 在 Cloudflare 创建 R2 存储桶，开启公开访问（自定义域名或 r2.dev）；
 2. Fork 本仓库，在 `apps/web/wrangler.jsonc` 里填上存储桶名称和公开地址；没有自己的域名时，把 `workers_dev` 改成 `true`；
 3. Cloudflare 控制台 → Workers 和 Pages → 导入 Git 仓库，填写构建命令和部署命令；
-4. 在 Worker 的「运行时变量和密钥」里添加 `S3IP_PASSWORD`（登录密码）和 `S3IP_SESSION_SECRET`（一串随机字符），**都要勾选「密钥」**；
+4. 在 Worker 的「运行时变量和密钥」里添加 `CLOUDFRAME_PASSWORD`（登录密码）和 `CLOUDFRAME_SESSION_SECRET`（一串随机字符），**都要勾选「密钥」**；
 5. 在 Worker → 域 里绑定自己的域名（例如 `pic.example.com`），再给它加一条登录速率限制规则；
 6. 打开你的域名，输入密码即可。
 
@@ -57,9 +59,9 @@
 
 ```bash
 pnpm install
-pnpm --filter s3-image-port-web dev     # 本地开发服务器
-pnpm --filter s3-image-port-web test    # 测试（在 Chromium 里运行）
-pnpm --filter s3-image-port-web lint
+pnpm --filter cloudframe-web dev     # 本地开发服务器
+pnpm --filter cloudframe-web test    # 测试（在 Chromium 里运行）
+pnpm --filter cloudframe-web lint
 ```
 
 ## 贡献者
@@ -73,4 +75,4 @@ pnpm --filter s3-image-port-web lint
 
 Cloudframe 基于 [yy4382](https://github.com/yy4382) 的 **[S3 Image Port](https://github.com/yy4382/s3-image-port)** 改造（同步至 v1.8.5 之后的上游代码）。上传、画廊、压缩、HEIC 和 Live Photo 等核心功能都来自原项目，非常感谢原作者的工作。
 
-与原项目的区别：原项目是一个公共面板，S3 参数在浏览器里填写并保存在本地，支持多配置和同步。Cloudframe 只保留自部署模式，专门适配 Cloudflare R2，移除了浏览器端 S3 配置、多配置切换、配置同步和内置文档站，并加强了登录与上传的安全措施。路径模板等设置的说明仍链接到原项目的在线文档。
+与原项目的区别：原项目是一个公共面板，S3 参数在浏览器里填写并保存在本地，支持多配置和同步。Cloudframe 只保留自部署模式，专门适配 Cloudflare R2，移除了浏览器端 S3 配置、多配置切换、配置同步和内置文档站，并加强了登录与上传的安全措施。设置说明也改为本仓库自己的文档。
