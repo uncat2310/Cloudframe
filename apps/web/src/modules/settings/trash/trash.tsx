@@ -37,6 +37,9 @@ export function TrashSettings() {
   const trash = useQuery({
     queryKey: trashQueryKey,
     queryFn: () => client.selfHost.trash.list(),
+    // Images land here from the gallery, which doesn't touch this query, so
+    // the app-wide 10-minute cache would show a stale list. Reload on open.
+    staleTime: 0,
   });
 
   const formatTime = new Intl.DateTimeFormat(locale, {
