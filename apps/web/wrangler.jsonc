@@ -6,8 +6,8 @@
   "name": "cloudframe",
   "compatibility_date": "2025-10-01",
   "compatibility_flags": ["nodejs_compat"],
-  // The panel is served from a custom domain (pic.as4837.de), whose WAF
-  // rate-limits logins; the *.workers.dev address would bypass that rule.
+  // The panel is served from a custom domain, whose WAF rate-limits logins;
+  // the *.workers.dev address would bypass that rule.
   // Set to true if you deploy without a custom domain.
   "workers_dev": false,
   // Branch previews would share the production bucket and password.
@@ -51,8 +51,11 @@
     }
   ],
   "vars": {
-    // TODO: the bucket's public URL (custom domain or r2.dev address)
-    "R2_PUBLIC_URL": "https://i.as4837.de",
+    // R2_PUBLIC_URL, the bucket's public URL, is set in the dashboard
+    // (Workers -> cloudframe -> Settings -> Variables and Secrets) so the
+    // domain stays out of this public repo; keep_vars preserves it. You can
+    // also put it here instead:
+    //   "R2_PUBLIC_URL": "https://img.example.com",
     // Shown on the storage settings page; keep in sync with bucket_name.
     "R2_BUCKET": "img",
     // Gallery thumbnails through Cloudflare Image Transformations, which must
