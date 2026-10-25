@@ -6,6 +6,8 @@
 
 **A frame in the cloud**: a private image-hosting panel on Cloudflare. Your images live in your own R2 bucket; the panel handles uploading and managing them, behind a single password that works on any device.
 
+📖 **Documentation**: the illustrated [guide & tutorial](docs/index.html) walks through deployment, uploads, the gallery, settings and security — start there if you are new.
+
 ## Why
 
 - **One password**: R2 access stays on the server and never reaches the browser. On a new device or browser, just enter the password.

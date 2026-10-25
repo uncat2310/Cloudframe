@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloudframe 文档与教程 · 云上的相框</title>
+<meta name="description" content="Cloudframe 使用指南：部署到 Cloudflare Workers / Docker / Node，上传、画廊、设置与安全的完整教程。">
+<style>
+/* Tokens: warm-editorial（Open Design 设计库）——奶油纸面 + 陶土红，清新温暖 */
+:root {
+  --bg: #fbf6ee;
+  --surface: #fffdf8;
+  --surface-warm: #f1e3cf;
+  --fg: #201914;
+  --fg-2: #4c4037;
+  --muted: #7a6d63;
+  --meta: #9b5b32;
+  --border: #ded2c3;
+  --border-soft: #eee4d7;
+  --accent: #9b5b32;
+  --brand: #c0512f;
+  --brand-soft: #f7e3d9;
+  --forest: #2f5b4f;
+  --forest-soft: #e2ede8;
+  --success: #4f8a4f;
+  --warn: #c9822f;
+  --danger: #b33a3a;
+  --code-bg: #f6ecdd;
+  --font-display: Georgia, "Times New Roman", "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+  --font-body: Inter, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --text-xs: 12px; --text-sm: 14px; --text-base: 16.5px; --text-lg: 20px;
+  --text-xl: 28px; --text-2xl: 42px;
+  --leading-body: 1.7; --leading-tight: 1.2;
+  --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-pill: 9999px;
+  --shadow-hover: 0 2px 16px rgba(32, 25, 20, 0.06);
+  --container-max: 1180px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: var(--text-base);
+  line-height: var(--leading-body); -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--brand-soft); }
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code {
+  font-family: var(--font-mono); font-size: 0.86em;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 6px; color: var(--fg);
+}
+pre {
+  background: var(--code-bg); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm); padding: 16px 20px; overflow-x: auto; margin: 14px 0;
+}
+pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.75; }
+pre .c { color: var(--muted); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: var(--leading-tight); }
+.wrap { max-width: var(--container-max); margin: 0 auto; padding: 0 36px; }
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(251, 246, 238, 0.9); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-soft);
+}
+.topbar-inner { height: 60px; display: flex; align-items: center; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 19px; color: var(--fg); }
+.brand:hover { text-decoration: none; }
+.brand .cloud {
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #e8956d, var(--brand)); color: #fff; font-size: 16px;
+}
+.brand small { font-family: var(--font-body); font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.14em; }
+.topbar nav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
+.topbar nav a { color: var(--fg-2); font-size: var(--text-sm); }
+.topbar nav a:hover { color: var(--brand); text-decoration: none; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--brand); color: #fff !important; font-size: var(--text-sm); font-weight: 600;
+  padding: 9px 18px; border-radius: 12px; border: none; cursor: pointer;
+}
+.btn:hover { background: #a8451f; text-decoration: none !important; }
+.btn.ghost { background: transparent; color: var(--fg) !important; border: 1px solid var(--fg); }
+.layout { display: grid; grid-template-columns: 230px 1fr; gap: 56px; padding: 48px 0 96px; }
+.sidebar { position: sticky; top: 96px; align-self: start; }
+.sidebar .side-title { font-size: var(--text-xs); letter-spacing: 0.16em; color: var(--meta); margin-bottom: 14px; font-weight: 700; }
+.sidebar a {
+  display: block; padding: 7px 12px; margin-left: -12px; border-radius: 8px;
+  color: var(--fg-2); font-size: var(--text-sm);
+}
+.sidebar a:hover { background: var(--surface); color: var(--brand); text-decoration: none; }
+.sidebar .sep { border-top: 1px solid var(--border-soft); margin: 14px 0; }
+.content { min-width: 0; max-width: 780px; }
+.content section { padding-top: 40px; }
+.content section:first-child { padding-top: 0; }
+.content h2 { font-size: var(--text-xl); margin-bottom: 14px; padding-top: 12px; }
+.content h2 .no { color: var(--brand); font-size: 0.62em; vertical-align: 0.32em; margin-right: 10px; font-family: var(--font-body); font-weight: 700; letter-spacing: 0.08em; }
+.content h3 { font-size: 19px; margin: 26px 0 8px; }
+.content p { color: var(--fg-2); margin: 10px 0; }
+.content ul, .content ol { color: var(--fg-2); margin: 10px 0 10px 22px; }
+.content li { margin: 6px 0; }
+.content li::marker { color: var(--brand); }
+.content strong { color: var(--fg); }
+.hr { border-top: 1px solid var(--border-soft); margin-top: 48px; }
+.eyebrow { font-size: var(--text-xs); letter-spacing: 0.22em; color: var(--meta); font-weight: 700; margin-bottom: 16px; }
+.hero h1 { font-size: var(--text-2xl); letter-spacing: -0.01em; line-height: 1.15; }
+.hero h1 .warm { color: var(--brand); }
+.hero .lead { font-size: 18px; color: var(--fg-2); margin-top: 18px; max-width: 640px; }
+.hero-ctas { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+.hero-ctas .btn { padding: 12px 22px; font-size: var(--text-sm); }
+.chips { display: flex; gap: 8px; margin-top: 22px; flex-wrap: wrap; }
+.chip {
+  font-size: var(--text-xs); color: var(--forest); background: var(--forest-soft);
+  border-radius: var(--radius-pill); padding: 4px 12px; font-weight: 600;
+}
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+.card {
+  background: var(--surface); border: 1px solid rgba(47, 91, 79, 0.14);
+  border-radius: var(--radius-md); padding: 24px 22px;
+}
+.card:hover { box-shadow: var(--shadow-hover); }
+.card .ic { font-size: 22px; margin-bottom: 10px; }
+.card h4 { font-family: var(--font-display); font-size: 17.5px; margin-bottom: 6px; }
+.card p { font-size: var(--text-sm); margin: 0; }
+.card .price { display: inline-block; margin-top: 12px; font-size: var(--text-xs); font-weight: 700; color: var(--brand); background: var(--brand-soft); padding: 3px 10px; border-radius: var(--radius-pill); }
+.steps { counter-reset: step; list-style: none; margin-left: 0 !important; }
+.steps li {
+  counter-increment: step; position: relative;
+  padding: 4px 0 18px 52px; margin: 0 !important;
+}
+.steps li::before {
+  content: counter(step); position: absolute; left: 0; top: 2px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--brand); color: #fff; font-weight: 700; font-size: 15px;
+  display: grid; place-items: center;
+}
+.steps li::after {
+  content: ""; position: absolute; left: 15.5px; top: 42px; bottom: 2px;
+  border-left: 1px dashed var(--border);
+}
+.steps li:last-child::after { display: none; }
+.steps .st { font-weight: 700; color: var(--fg); font-size: 17px; }
+.note { border-radius: var(--radius-md); padding: 16px 20px; margin: 16px 0; font-size: var(--text-sm); }
+.note p { margin: 4px 0; }
+.note.tip { background: var(--brand-soft); border-left: 4px solid var(--brand); }
+.note.good { background: var(--forest-soft); border-left: 4px solid var(--forest); }
+.note .nt { font-weight: 700; color: var(--fg); }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: var(--text-sm); background: var(--surface); border-radius: var(--radius-sm); overflow: hidden; }
+th { text-align: left; background: var(--surface-warm); color: var(--fg); font-weight: 700; }
+th, td { padding: 10px 14px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td { color: var(--fg-2); }
+details { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 14px 20px; margin: 10px 0; }
+summary { cursor: pointer; font-weight: 700; color: var(--fg); font-size: 16px; }
+summary::marker { color: var(--brand); }
+details p { font-size: var(--text-sm); }
+footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-top: 24px; }
+.foot { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: var(--text-sm); color: var(--muted); }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 8px; }
+  .sidebar { position: static; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .sidebar .side-title, .sidebar .sep { display: none; }
+  .sidebar a { margin-left: 0; background: var(--surface); border: 1px solid var(--border-soft); }
+  .cards { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 34px; }
+  .wrap { padding: 0 20px; }
+  .topbar nav a:not(.btn) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#"><span class="cloud">☁</span>Cloudframe <small>文档</small></a>
+    <nav>
+      <a href="#deploy">部署</a>
+      <a href="#usage">使用</a>
+      <a href="#settings">设置</a>
+      <a href="#faq">常见问题</a>
+      <a href="../README-zh.md">README</a>
+      <a class="btn" href="https://github.com/uncat2310/Cloudframe">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap layout">
+
+  <aside class="sidebar">
+    <div class="side-title">开始</div>
+    <a href="#start">快速开始</a>
+    <a href="#deploy">部署到 Workers（免费）</a>
+    <a href="#after">部署后推荐设置</a>
+    <a href="#docker">Docker / Node 部署</a>
+    <div class="sep"></div>
+    <div class="side-title">使用</div>
+    <a href="#usage">上传与画廊</a>
+    <a href="#manage">分享与管理</a>
+    <a href="#settings">设置速查</a>
+    <div class="sep"></div>
+    <div class="side-title">进阶</div>
+    <a href="#security">安全</a>
+    <a href="#quota">免费额度</a>
+    <a href="#faq">常见问题</a>
+  </aside>
+
+  <main class="content">
+
+    <section class="hero" id="start">
+      <div class="eyebrow">文档与教程 · DOCUMENTATION</div>
+      <h1>把照片，<span class="warm">安心地</span><br>放进云端相框</h1>
+      <p class="lead">Cloudframe 是一个部署在 Cloudflare 上的私人图床面板：图片存放在你自己的 R2 存储桶里，面板负责上传和管理，只用一个密码，就能在任何设备上打开使用。这篇教程从部署讲起，覆盖上传、画廊、设置与安全。</p>
+      <div class="hero-ctas">
+        <a class="btn" href="#deploy">开始部署 →</a>
+        <a class="btn ghost" href="#usage">先看功能</a>
+      </div>
+      <div class="chips">
+        <span class="chip">个人使用免费</span>
+        <span class="chip">Workers 方式不需要 R2 API 令牌</span>
+        <span class="chip">图片外链不经过面板</span>
+      </div>
+
+      <h2 style="margin-top:48px"><span class="no">01</span>三步看懂它怎么工作</h2>
+      <div class="cards">
+        <div class="card">
+          <div class="ic">🪣</div>
+          <h4>准备一个 R2 存储桶</h4>
+          <p>在 Cloudflare 创建存储桶并开启公开访问，图片就存在这里，归你所有。</p>
+        </div>
+        <div class="card">
+          <div class="ic">🖼️</div>
+          <h4>部署面板</h4>
+          <p>面板跑在 Workers 上，通过绑定直接读写存储桶。浏览器只和面板说话，拿不到任何 R2 密钥。</p>
+        </div>
+        <div class="card">
+          <div class="ic">🔑</div>
+          <h4>设个密码，开用</h4>
+          <p>打开你的域名，输入密码即可。换设备、换浏览器，同一套设置跟着你走。</p>
+        </div>
+      </div>
+      <div class="note good">
+        <p><span class="nt">核心原则：</span>图片的展示和外链直接走 R2 的公开地址，不经过面板。哪天不用这个面板了，已经发出去的链接照样能打开——图片永远不被面板「绑架」。</p>
+      </div>
+    </section>
+
+    <section id="deploy">
+      <div class="hr"></div>
+      <h2><span class="no">02</span>部署到 Cloudflare Workers（免费）</h2>
+      <p>三种部署方式里最推荐这一种：个人使用免费，不需要创建 R2 API 令牌，全程在 Cloudflare 后台点选完成，不用装任何工具。完整版见仓库的 <a href="../selfhost/README.md">部署指南</a>，这里是主干流程。</p>
+      <ol class="steps">
+        <li>
+          <div class="st">创建 R2 存储桶，开启公开访问</div>
+          <p>Cloudflare 控制台 → R2 → 创建存储桶。然后进存储桶设置开启公开访问，二选一：绑定自定义域名（推荐，能走 Cloudflare 缓存），或启用 <code>r2.dev</code> 子域名（有速率限制，只适合轻量使用）。记下这个公开地址，后面要用。不需要给存储桶配 CORS。</p>
+        </li>
+        <li>
+          <div class="st">Fork 仓库，改一处配置</div>
+          <p>在 GitHub 上 Fork 本仓库，编辑 <code>apps/web/wrangler.jsonc</code>：把 <code>bucket_name</code> 改成你的存储桶名，<code>R2_PUBLIC_URL</code> 填上一步的公开地址（不要带结尾的 <code>/</code>）。没有自己的域名时，把 <code>workers_dev</code> 改成 <code>true</code>，否则部署完没有访问地址。<code>binding</code> 保持 <code>BUCKET</code> 不动；<code>kv_namespaces</code> 里的 <code>id</code> 是原作者账号的，先删掉这一段或之后按「设置同步」换成你自己的。改完提交到 <code>main</code>。</p>
+        </li>
+        <li>
+          <div class="st">在 Cloudflare 导入 Git 仓库</div>
+          <p>控制台 → Workers 和 Pages → 创建 → Connect GitHub，只授权你 Fork 的这一个仓库。填写：项目名称 <code>cloudframe</code>（与配置里的 <code>name</code> 一致）、构建命令和部署命令如下，根目录保持默认。点部署，等大约 2 分钟构建完成。建议随后在 Worker 设置里关闭「预览分支构建」，免得以后其他分支的推送出现失败检查。</p>
+          <pre><code><span class="c"># 构建命令</span>
+pnpm --filter cloudframe-web build:worker
+<span class="c"># 部署命令</span>
+pnpm --filter cloudframe-web deploy:worker</code></pre>
+        </li>
+        <li>
+          <div class="st">添加登录密码和会话密钥</div>
+          <p>Worker → 设置 → 运行时变量和密钥（确认在「生产」环境），添加两个变量，<strong>都务必勾选「密钥」</strong>，让值加密保存：</p>
+          <pre><code>CLOUDFRAME_PASSWORD        <span class="c"># 你的登录密码，建议 16 位以上随机字符</span>
+CLOUDFRAME_SESSION_SECRET  <span class="c"># 签名登录 cookie 的随机串，终端运行 openssl rand -base64 32 生成</span></code></pre>
+          <p>保存后检查这两行的类型显示为「密钥」、值显示「值已加密」；如果能看到明文，说明没勾对，删掉重加。</p>
+        </li>
+        <li>
+          <div class="st">绑定自己的域名</div>
+          <p>Worker → 域 → 添加域名，选你托管在 Cloudflare 的域名，填子域名（例如 <code>pic</code>）。DNS 和证书会自动创建，一两分钟后就能打开。没有域名就跳过这一步，用 <code>https://cloudframe.&lt;你的子域&gt;.workers.dev</code> 访问（需第 2 步已把 <code>workers_dev</code> 设为 <code>true</code>）。</p>
+        </li>
+        <li>
+          <div class="st">打开域名，输入密码</div>
+          <p>部署完成。之后每次推送到 <code>main</code> 都会自动重新部署；面板出问题时，可以在 Worker 的 Observability 里看日志。</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="after">
+      <div class="hr"></div>
+      <h2><span class="no">03</span>部署后推荐设置</h2>
+      <p>下面四项都不是必需的，但强烈建议顺手做完，每项在<a href="../selfhost/README.md">部署指南</a>里都有逐点击的步骤。</p>
+      <div class="cards" style="grid-template-columns:1fr 1fr">
+        <div class="card">
+          <div class="ic">🚦</div>
+          <h4>登录限速规则</h4>
+          <p>应用自带的限流是近似计数。在域名上再加一条 Cloudflare 免费的速率限制规则（针对登录接口、单 IP 10 秒最多 4 次），能精确挡住暴力猜密码。需要自定义域名，且 <code>workers_dev</code> 保持 <code>false</code> 才不会被绕过。</p>
+          <span class="price">部署指南 2.5</span>
+        </div>
+        <div class="card">
+          <div class="ic">⚡</div>
+          <h4>画廊缩略图</h4>
+          <p>开启 Cloudflare 图片变换后，画廊只加载长边 800 像素的缩略图（通常几十 KB），点开和下载仍是原图。免费版每月 5,000 张不同缩略图，个人使用绰绰有余；超额时自动回退显示原图，不产生费用。</p>
+          <span class="price">部署指南 2.6</span>
+        </div>
+        <div class="card">
+          <div class="ic">🔄</div>
+          <h4>设置同步</h4>
+          <p>创建一个 Workers KV 命名空间，把 ID 填回配置，压缩、路径模板和画廊设置就保存在服务器上，所有设备共用一套。改完约 1 秒自动保存；语言和主题仍跟随各自的浏览器。</p>
+          <span class="price">部署指南 2.7</span>
+        </div>
+        <div class="card">
+          <div class="ic">🗑️</div>
+          <h4>回收站自动清理</h4>
+          <p>删除的图片先去存储桶的 <code>.trash/</code> 目录，30 天内可恢复。给存储桶加一条对象生命周期规则（前缀 <code>.trash/</code>，30 天后删除），再加一条规则禁止公开访问回收站，就齐了。注意前缀一定要填，留空会作用于整个存储桶。</p>
+          <span class="price">部署指南 2.8</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="docker">
+      <div class="hr"></div>
+      <h2><span class="no">04</span>另外两种部署：Docker / Node</h2>
+      <p>想把面板跑在自己的服务器或电脑上也可以。区别是这两种方式要先在 R2 概览页创建 API 令牌（权限选「对象读和写」，限定到你的存储桶），并记下账户 ID、访问密钥 ID 和机密访问密钥。</p>
+      <h3>Docker（VPS 或常开的电脑）</h3>
+      <pre><code>git clone &lt;你的仓库地址&gt; cloudframe
+cd cloudframe/selfhost
+cp .env.example .env   <span class="c"># 填入 R2 信息和登录密码</span>
+docker compose up -d --build</code></pre>
+      <p>浏览器打开 <code>http://服务器IP:3000</code> 输入密码即可。设置保存在数据卷 <code>cloudframe-data</code> 里，重建容器不丢失。更新版本就是 <code>git pull</code> 后再 <code>docker compose up -d --build</code>。</p>
+      <h3>直接运行 Node</h3>
+      <pre><code>pnpm install
+pnpm --filter cloudframe-web build
+cp selfhost/.env.example selfhost/.env   <span class="c"># 然后编辑</span>
+node --env-file=selfhost/.env apps/web/.output/server/index.mjs</code></pre>
+      <p>默认监听 3000 端口，可用 <code>PORT</code> 修改。需要 Node.js 22 和 pnpm（<code>corepack enable</code>）。</p>
+      <h3>环境变量速查（Docker / Node）</h3>
+      <table>
+        <tr><th style="width:34%">变量</th><th style="width:12%">必填</th><th>说明</th></tr>
+        <tr><td><code>CLOUDFRAME_PASSWORD</code></td><td>是</td><td>面板登录密码</td></tr>
+        <tr><td><code>R2_ACCOUNT_ID</code></td><td>是*</td><td>Cloudflare 账户 ID，用来拼 S3 Endpoint；填了 <code>R2_ENDPOINT</code> 可免</td></tr>
+        <tr><td><code>R2_ACCESS_KEY_ID</code> / <code>R2_SECRET_ACCESS_KEY</code></td><td>是</td><td>API 令牌的密钥对</td></tr>
+        <tr><td><code>R2_BUCKET</code></td><td>是</td><td>存储桶名称</td></tr>
+        <tr><td><code>R2_PUBLIC_URL</code></td><td>是</td><td>公开访问地址（自定义域名或 r2.dev）</td></tr>
+        <tr><td><code>CLOUDFRAME_SESSION_SECRET</code></td><td>否</td><td>会话签名密钥，默认用 <code>R2_SECRET_ACCESS_KEY</code></td></tr>
+        <tr><td><code>R2_INCLUDE_PATH</code></td><td>否</td><td>只让面板看某个前缀下的文件，例如 <code>i/</code></td></tr>
+        <tr><td><code>CLOUDFRAME_THUMBNAILS</code></td><td>否</td><td>设为 <code>cloudflare</code> 开启画廊缩略图</td></tr>
+        <tr><td><code>CLOUDFRAME_CLIENT_IP_HEADER</code></td><td>否</td><td>放在反向代理后面时，按真实 IP 限流用的请求头；没有代理时不要设</td></tr>
+      </table>
+      <p>配置不完整时，面板会直接列出缺了哪个变量，服务器日志里也会打印，不用猜。</p>
+    </section>
+
+    <section id="usage">
+      <div class="hr"></div>
+      <h2><span class="no">05</span>上传与画廊</h2>
+      <h3>上传</h3>
+      <ul>
+        <li><strong>三种姿势</strong>：把文件拖进窗口、在页面上直接粘贴、或者点选文件。</li>
+        <li><strong>上传前处理</strong>：可以先压缩，并转换格式（WebP / AVIF / JPEG / PNG），大图发外链也不心疼流量。</li>
+        <li><strong>路径模板</strong>：用模板决定图片在存储桶里的存放路径，例如 <code>i/{{year}}/{{month}}/{{day}}/{{ulid-dayslice}}.{{ext}}</code> 会按日期分文件夹、用 ULID 命名。占位符全集见<a href="settings.md">设置说明</a>。</li>
+        <li><strong>能传什么</strong>：只允许图片和视频（Live Photo 的 <code>.mov</code> 也算），其他类型会被拒绝。</li>
+      </ul>
+      <h3>画廊</h3>
+      <ul>
+        <li>网格浏览，按名称搜索，按日期筛选和排序，图多也不乱。</li>
+        <li>支持 HEIC 和 Apple Live Photo——经由面板转发，浏览器里能直接看。</li>
+        <li>开了缩略图后（见「部署后推荐设置」），画廊加载的是小图，点开才是原图。</li>
+      </ul>
+    </section>
+
+    <section id="manage">
+      <div class="hr"></div>
+      <h2><span class="no">06</span>分享与管理</h2>
+      <ul>
+        <li><strong>分享</strong>：点一下复制图片链接，或者直接复制 Markdown 格式，贴进文章就能用。这些链接走 R2 公开地址，不经过面板。</li>
+        <li><strong>管理</strong>：重命名、删除、下载都在画廊里完成。</li>
+        <li><strong>回收站</strong>：删除不是立刻消失——图片先移到回收站，30 天内可以在「设置 → 回收站」里恢复或永久删除（回收站的自动清理规则见部署指南 2.8）。</li>
+      </ul>
+      <div class="note tip">
+        <p><span class="nt">小提示：</span>上传、删除、重命名、列出文件，以及 HEIC / Live Photo 的读取会经过面板；普通图片的展示和外链直接走 R2，不耗面板的请求额度。</p>
+      </div>
+    </section>
+
+    <section id="settings">
+      <div class="hr"></div>
+      <h2><span class="no">07</span>设置速查</h2>
+      <ul>
+        <li><strong>上传设置</strong>：压缩开关与目标格式、路径模板与预设——决定每张新图怎么存。</li>
+        <li><strong>画廊设置</strong>：排序、显示选项等浏览偏好。</li>
+        <li><strong>设置存哪</strong>：开启设置同步（Workers KV 或 Docker 的 <code>/data</code> 目录）后，设置存在服务器上，所有设备一致；没开启时，存在各自的浏览器里。语言和主题始终跟随浏览器，不同步。</li>
+        <li><strong>存储桶范围</strong>：<code>R2_INCLUDE_PATH</code> 可以把面板限定在一个前缀里；<code>CLOUDFRAME_KEY_TEMPLATE</code> 可以预设新浏览器的默认路径模板。</li>
+      </ul>
+      <p>每一项设置的完整说明在仓库的<a href="settings.md">设置说明（中文）</a> / <a href="settings.en.md">Settings reference (English)</a> 里，面板设置页的帮助链接也指向它们。</p>
+    </section>
+
+    <section id="security">
+      <div class="hr"></div>
+      <h2><span class="no">08</span>安全</h2>
+      <p>面板只有一个密码，而密码背后是你整个存储桶，所以这部分值得认真看：</p>
+      <ul>
+        <li><strong>密码要长</strong>：16 位以上的随机密码。它就是存储桶的钥匙。</li>
+        <li><strong>登录有限流</strong>：每个 IP 每分钟最多 10 次、所有来源合计每分钟最多 60 次；Workers 上用 Cloudflare 提供、无法伪造的客户端 IP。再配合域名上的速率限制规则（部署指南 2.5），猜密码基本没戏。</li>
+        <li><strong>会话</strong>：登录状态是签名的 HttpOnly、SameSite=Strict cookie，有效期 30 天。「退出登录」只清当前浏览器；想让所有设备立即失效，改 <code>CLOUDFRAME_SESSION_SECRET</code> 或密码即可。</li>
+        <li><strong>为什么建议设 SESSION_SECRET</strong>：不设也能用，但 cookie 只用由密码派生的密钥签名，一旦泄露就可能被离线爆破出密码；设了之后没有这个隐患，日常使用无区别。</li>
+        <li><strong>文件与响应</strong>：只允许上传图片和视频；通过面板读取的文件在沙箱中返回，不会被当成网页执行；所有响应都带安全响应头（禁止被嵌入、禁止 MIME 嗅探、HSTS 等）。</li>
+        <li><strong>Docker / Node 注意</strong>：暴露到公网时务必加 HTTPS，否则密码明文传输。用 Caddy 反代最省事，还能自动签证书：</li>
+      </ul>
+      <pre><code>panel.example.com {
+    reverse_proxy 127.0.0.1:3000
+}</code></pre>
+    </section>
+
+    <section id="quota">
+      <div class="hr"></div>
+      <h2><span class="no">09</span>免费额度</h2>
+      <p>个人图床基本用不完这些额度，心里有个数就行：</p>
+      <table>
+        <tr><th style="width:30%">服务</th><th>免费额度</th></tr>
+        <tr><td>Workers</td><td>每天 10 万次请求；每次请求 10 ms CPU 时间（等 R2 的时间不计）</td></tr>
+        <tr><td>R2</td><td>每月 10 GB 存储、100 万次写类操作、1,000 万次读类操作；流量免费</td></tr>
+        <tr><td>Workers KV（设置同步）</td><td>每天 10 万次读、1,000 次写</td></tr>
+        <tr><td>图片变换（缩略图）</td><td>每月 5,000 张不同的缩略图，超额自动回退原图、不收费</td></tr>
+      </table>
+      <p>上传特别大的图片偶尔失败，多半是超了单次请求的 CPU 时间：先在上传设置里开启压缩，或者升级 Workers 付费版。</p>
+    </section>
+
+    <section id="faq">
+      <div class="hr"></div>
+      <h2><span class="no">10</span>常见问题</h2>
+      <details>
+        <summary>没有自己的域名，能用吗？</summary>
+        <p>能。把 <code>wrangler.jsonc</code> 里的 <code>workers_dev</code> 改成 <code>true</code>，用 <code>workers.dev</code> 地址访问面板；图片公开地址用存储桶的 <code>r2.dev</code> 子域名。只是画廊缩略图和域名级限速规则需要自定义域名才能开。</p>
+      </details>
+      <details>
+        <summary>部署完了打不开、没有访问地址？</summary>
+        <p>多半是 <code>workers_dev</code> 是 <code>false</code> 又还没绑域名。绑上域名，或者把 <code>workers_dev</code> 改成 <code>true</code> 重新部署即可。再检查两个密钥变量是不是加在了「生产」环境。</p>
+      </details>
+      <details>
+        <summary>画廊打开很慢，图片一张张慢慢出。</summary>
+        <p>按部署指南 2.6 开启图片变换并把 <code>CLOUDFRAME_THUMBNAILS</code> 设为 <code>cloudflare</code>，画廊就会只加载 800 像素的缩略图。注意存储桶公开地址要绑在你自己的域名上，<code>r2.dev</code> 地址开不了。</p>
+      </details>
+      <details>
+        <summary>换了个浏览器，设置不一样了。</summary>
+        <p>说明还没开设置同步。按部署指南 2.7 创建 KV 并把 ID 填回配置，之后所有设备的设置就统一了。第一次开启时，以最先登录的那个浏览器里的设置为准。</p>
+      </details>
+      <details>
+        <summary>删掉的图片去哪了？</summary>
+        <p>进了存储桶 <code>.trash/</code> 目录下的回收站，保留原路径。30 天内去「设置 → 回收站」可以恢复或永久删除；想让它 30 天后自动清掉，别忘了加对象生命周期规则（部署指南 2.8）。</p>
+      </details>
+      <details>
+        <summary>忘了密码，或者想让所有设备重新登录。</summary>
+        <p>密码存在 Worker 的密钥（或 Docker / Node 的 <code>.env</code>）里，改掉它并重新部署即可。改 <code>CLOUDFRAME_SESSION_SECRET</code> 也会让所有已发出的登录 cookie 立即失效。</p>
+      </details>
+      <details>
+        <summary>面板和原项目 S3 Image Port 是什么关系？</summary>
+        <p>Cloudframe 基于 S3 Image Port 改造，只保留自部署模式、专门适配 Cloudflare R2：去掉了浏览器端填 S3 参数、多配置和配置同步，登录与上传做了安全加固。上传、画廊、压缩、HEIC / Live Photo 等核心能力都来自原项目。</p>
+      </details>
+    </section>
+
+    <footer>
+      <div class="foot">
+        <span>Cloudframe · 云上的相框 — 基于 <a href="https://github.com/yy4382/s3-image-port">S3 Image Port</a>（yy4382）改造，感谢原作者。</span>
+        <span><a href="https://github.com/uncat2310/Cloudframe">GitHub 仓库</a> · <a href="../selfhost/README.md">部署指南</a> · <a href="settings.md">设置说明</a></span>
+      </div>
+    </footer>
+
+  </main>
+</div>
+
+</body>
+</html>
