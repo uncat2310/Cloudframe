@@ -69,6 +69,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: va
 .brand:hover { text-decoration: none; }
 .brand .cloud { width: 30px; height: 30px; border-radius: 9px; display: block; }
 .brand small { font-family: var(--font-body); font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.14em; }
+.toc-btn { display: none; }
 .topbar nav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
 .topbar nav a { color: var(--fg-2); font-size: var(--text-sm); }
 .topbar nav a:hover { color: var(--brand); text-decoration: none; }
@@ -80,7 +81,6 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: va
 .btn:hover { background: #a8451f; text-decoration: none !important; }
 .btn.ghost { background: transparent; color: var(--fg) !important; border: 1px solid var(--fg); }
 .layout { display: grid; grid-template-columns: 230px 1fr; gap: 56px; padding-top: 48px; padding-bottom: 96px; }
-.sidebar summary { display: none; }
 .sidebar { position: sticky; top: 84px; align-self: start; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 20px 18px; }
 .sidebar .side-title { font-size: var(--text-xs); letter-spacing: 0.16em; color: var(--meta); margin-bottom: 14px; font-weight: 700; }
 .sidebar a {
@@ -159,17 +159,17 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
 .to-top.show { opacity: 1; pointer-events: auto; transform: none; }
 .to-top:hover { border-color: var(--brand); }
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; gap: 8px; padding-top: 40px; }
-  .sidebar { position: static; display: block; padding: 0; overflow: hidden; }
-  .sidebar summary { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; font-weight: 700; font-size: 15px; cursor: pointer; list-style: none; color: var(--fg); }
-  .sidebar summary::-webkit-details-marker { display: none; }
-  .sidebar .chev { color: var(--muted); transition: transform .2s; }
-  .sidebar[open] .chev { transform: rotate(180deg); }
-  .toc-body { display: flex; flex-wrap: wrap; gap: 6px 8px; padding: 2px 16px 16px; align-items: center; }
-  .sidebar .side-title { flex: 0 0 100%; margin: 12px 2px 2px; }
-  .sidebar .side-title:first-child { margin-top: 0; }
+  .layout { grid-template-columns: 1fr; gap: 8px; padding-top: 32px; }
+  .sidebar { position: fixed; top: 70px; left: 16px; right: 16px; z-index: 55; padding: 10px; max-height: min(72vh, 560px); overflow-y: auto; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity .22s ease, transform .22s ease, visibility .22s; }
+  .sidebar.open { opacity: 1; visibility: visible; transform: none; }
+  .toc-body { display: block; padding: 4px; }
+  .toc-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border-soft); color: var(--fg); font: inherit; font-size: var(--text-sm); font-weight: 600; padding: 8px 15px; border-radius: 999px; cursor: pointer; }
+  .toc-btn .bars { width: 15px; height: 2px; background: currentColor; box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor; border-radius: 2px; flex: none; }
+  .toc-btn.on { color: var(--brand); border-color: var(--brand); }
+  .sidebar .side-title { margin: 14px 10px 6px; }
+  .sidebar .side-title:first-child { margin-top: 4px; }
   .sidebar .sep { display: none; }
-  .sidebar a { margin-left: 0; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 999px; padding: 5px 13px; }
+  .sidebar a { margin-left: 0; display: block; background: transparent; border: none; border-radius: 10px; padding: 9px 12px; font-size: 15px; }
   .cards { grid-template-columns: 1fr; }
   .hero h1 { font-size: 34px; }
   .wrap { padding: 0 20px; }
@@ -194,6 +194,7 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
   <div class="wrap topbar-inner">
     <a class="brand" href="#"><img class="cloud" src="favicon.svg" alt="Cloudframe 图标">Cloudframe <small>文档</small></a>
     <nav>
+      <button class="toc-btn" id="tocBtn" type="button" aria-label="打开目录" aria-expanded="false"><span class="bars"></span>目录</button>
       <a href="#deploy">部署</a>
       <a href="#usage">使用</a>
       <a href="#settings">设置</a>
@@ -206,8 +207,7 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
 
 <div class="wrap layout">
 
-  <details class="sidebar" id="toc" open>
-    <summary class="toc-head">目录<span class="chev">▾</span></summary>
+  <aside class="sidebar" id="toc">
     <div class="toc-body">
     <div class="side-title">开始</div>
     <a href="#start">快速开始</a>
@@ -225,7 +225,7 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
     <a href="#quota">免费额度</a>
     <a href="#faq">常见问题</a>
     </div>
-  </details>
+  </aside>
 
   <main class="content">
 
@@ -488,7 +488,7 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs</code></pre>
 
 <button class="to-top" id="toTop" type="button" aria-label="回到顶部">↑</button>
 <script>
-(function(){var t=document.getElementById('toc');if(!t)return;var mq=window.matchMedia('(max-width:900px)');if(mq.matches){t.removeAttribute('open');}t.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){if(mq.matches){t.removeAttribute('open');}});});})();
+(function(){var t=document.getElementById('toc'),b=document.getElementById('tocBtn');if(!t||!b)return;var mq=window.matchMedia('(max-width:900px)');function close(){t.classList.remove('open');b.classList.remove('on');b.setAttribute('aria-expanded','false');}b.addEventListener('click',function(e){e.stopPropagation();var o=t.classList.toggle('open');b.classList.toggle('on',o);b.setAttribute('aria-expanded',o?'true':'false');});t.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){if(mq.matches){close();}});});document.addEventListener('click',function(e){if(mq.matches&&t.classList.contains('open')&&!t.contains(e.target)){close();}});document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();}});})();
 (function(){var b=document.getElementById('toTop');if(!b)return;var f=function(){b.classList.toggle('show',window.scrollY>600);};window.addEventListener('scroll',f,{passive:true});f();b.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});})();
 </script>
 </body>
