@@ -155,8 +155,11 @@ summary::marker { color: var(--brand); }
 details p { font-size: var(--text-sm); }
 footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-top: 24px; }
 .foot { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: var(--text-sm); color: var(--muted); }
+.to-top { position: fixed; right: 22px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 46px; height: 46px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border-soft); box-shadow: 0 12px 32px -12px rgba(90, 50, 20, .35); color: var(--brand); font-size: 20px; line-height: 1; display: grid; place-items: center; cursor: pointer; opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .25s, transform .25s; z-index: 60; }
+.to-top.show { opacity: 1; pointer-events: auto; transform: none; }
+.to-top:hover { border-color: var(--brand); }
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; gap: 8px; }
+  .layout { grid-template-columns: 1fr; gap: 8px; padding-top: 40px; }
   .sidebar { position: static; display: block; padding: 0; overflow: hidden; }
   .sidebar summary { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; font-weight: 700; font-size: 15px; cursor: pointer; list-style: none; color: var(--fg); }
   .sidebar summary::-webkit-details-marker { display: none; }
@@ -483,8 +486,10 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs</code></pre>
   </main>
 </div>
 
+<button class="to-top" id="toTop" type="button" aria-label="回到顶部">↑</button>
 <script>
 (function(){var t=document.getElementById('toc');if(!t)return;var mq=window.matchMedia('(max-width:900px)');if(mq.matches){t.removeAttribute('open');}t.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){if(mq.matches){t.removeAttribute('open');}});});})();
+(function(){var b=document.getElementById('toTop');if(!b)return;var f=function(){b.classList.toggle('show',window.scrollY>600);};window.addEventListener('scroll',f,{passive:true});f();b.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});})();
 </script>
 </body>
 </html>
