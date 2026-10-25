@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cloudframe 文档与教程 · 云上的相框</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="description" content="Cloudframe 使用指南：部署到 Cloudflare Workers / Docker / Node，上传、画廊、设置与安全的完整教程。">
 <style>
 /* Tokens: warm-editorial（Open Design 设计库）——奶油纸面 + 陶土红，清新温暖 */
@@ -66,10 +67,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: va
 .topbar-inner { height: 60px; display: flex; align-items: center; gap: 28px; }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 19px; color: var(--fg); }
 .brand:hover { text-decoration: none; }
-.brand .cloud {
-  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
-  background: linear-gradient(135deg, #e8956d, var(--brand)); color: #fff; font-size: 16px;
-}
+.brand .cloud { width: 30px; height: 30px; border-radius: 9px; display: block; }
 .brand small { font-family: var(--font-body); font-size: var(--text-xs); color: var(--muted); letter-spacing: 0.14em; }
 .topbar nav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
 .topbar nav a { color: var(--fg-2); font-size: var(--text-sm); }
@@ -82,6 +80,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: va
 .btn:hover { background: #a8451f; text-decoration: none !important; }
 .btn.ghost { background: transparent; color: var(--fg) !important; border: 1px solid var(--fg); }
 .layout { display: grid; grid-template-columns: 230px 1fr; gap: 56px; padding-top: 48px; padding-bottom: 96px; }
+.sidebar summary { display: none; }
 .sidebar { position: sticky; top: 84px; align-self: start; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 20px 18px; }
 .sidebar .side-title { font-size: var(--text-xs); letter-spacing: 0.16em; color: var(--meta); margin-bottom: 14px; font-weight: 700; }
 .sidebar a {
@@ -158,7 +157,12 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
 .foot { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: var(--text-sm); color: var(--muted); }
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; gap: 8px; }
-  .sidebar { position: static; display: flex; flex-wrap: wrap; gap: 6px 8px; padding: 16px; align-items: center; }
+  .sidebar { position: static; display: block; padding: 0; overflow: hidden; }
+  .sidebar summary { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; font-weight: 700; font-size: 15px; cursor: pointer; list-style: none; color: var(--fg); }
+  .sidebar summary::-webkit-details-marker { display: none; }
+  .sidebar .chev { color: var(--muted); transition: transform .2s; }
+  .sidebar[open] .chev { transform: rotate(180deg); }
+  .toc-body { display: flex; flex-wrap: wrap; gap: 6px 8px; padding: 2px 16px 16px; align-items: center; }
   .sidebar .side-title { flex: 0 0 100%; margin: 12px 2px 2px; }
   .sidebar .side-title:first-child { margin-top: 0; }
   .sidebar .sep { display: none; }
@@ -185,7 +189,7 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
 
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <a class="brand" href="#"><span class="cloud">☁</span>Cloudframe <small>文档</small></a>
+    <a class="brand" href="#"><img class="cloud" src="favicon.svg" alt="Cloudframe 图标">Cloudframe <small>文档</small></a>
     <nav>
       <a href="#deploy">部署</a>
       <a href="#usage">使用</a>
@@ -199,7 +203,9 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
 
 <div class="wrap layout">
 
-  <aside class="sidebar">
+  <details class="sidebar" id="toc" open>
+    <summary class="toc-head">目录<span class="chev">▾</span></summary>
+    <div class="toc-body">
     <div class="side-title">开始</div>
     <a href="#start">快速开始</a>
     <a href="#deploy">部署到 Workers（免费）</a>
@@ -215,7 +221,8 @@ footer { border-top: 1px solid var(--border-soft); padding: 36px 0 48px; margin-
     <a href="#security">安全</a>
     <a href="#quota">免费额度</a>
     <a href="#faq">常见问题</a>
-  </aside>
+    </div>
+  </details>
 
   <main class="content">
 
@@ -476,5 +483,8 @@ node --env-file=selfhost/.env apps/web/.output/server/index.mjs</code></pre>
   </main>
 </div>
 
+<script>
+(function(){var t=document.getElementById('toc');if(!t)return;var mq=window.matchMedia('(max-width:900px)');if(mq.matches){t.removeAttribute('open');}t.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){if(mq.matches){t.removeAttribute('open');}});});})();
+</script>
 </body>
 </html>
